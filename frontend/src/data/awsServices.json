@@ -1,0 +1,624 @@
+{
+  "services": [
+    {
+      "id": "aws-lambda",
+      "name": "Lambda Function",
+      "resourceType": "AWS::Lambda::Function",
+      "category": "Compute",
+      "iconPath": "mdi:function",
+      "description": "Serverless event-driven compute",
+      "cfProperties": {
+        "required": ["Code", "Role"],
+        "optional": ["FunctionName", "Handler", "Runtime", "Environment", "Timeout", "MemorySize", "VpcConfig", "Layers", "ReservedConcurrentExecutions", "Tags"]
+      },
+      "defaultProperties": {
+        "Runtime": "python3.14",
+        "Handler": "lambda_function.lambda_handler",
+        "Timeout": 60,
+        "MemorySize": 128
+      }
+    },
+    {
+      "id": "aws-ec2-instance",
+      "name": "EC2 Instance",
+      "resourceType": "AWS::EC2::Instance",
+      "category": "Compute",
+      "iconPath": "mdi:server",
+      "description": "Virtual server in the cloud",
+      "cfProperties": {
+        "required": ["ImageId"],
+        "optional": ["InstanceType", "KeyName", "SubnetId", "SecurityGroupIds", "IamInstanceProfile", "UserData", "Tags", "BlockDeviceMappings", "Monitoring", "EbsOptimized"]
+      },
+      "defaultProperties": {
+        "InstanceType": "t3.medium",
+        "Monitoring": false,
+        "EbsOptimized": true
+      }
+    },
+    {
+      "id": "aws-autoscaling-group",
+      "name": "Auto Scaling Group",
+      "resourceType": "AWS::AutoScaling::AutoScalingGroup",
+      "category": "Compute",
+      "iconPath": "mdi:auto-fix",
+      "description": "Automatically scale EC2 capacity",
+      "cfProperties": {
+        "required": ["MinSize", "MaxSize"],
+        "optional": ["AutoScalingGroupName", "DesiredCapacity", "LaunchTemplate", "TargetGroupARNs", "VPCZoneIdentifier", "HealthCheckType", "HealthCheckGracePeriod", "Tags"]
+      },
+      "defaultProperties": {
+        "MinSize": 1,
+        "MaxSize": 4,
+        "DesiredCapacity": 2,
+        "HealthCheckType": "EC2",
+        "HealthCheckGracePeriod": 300
+      }
+    },
+    {
+      "id": "aws-ecs-cluster",
+      "name": "ECS Cluster",
+      "resourceType": "AWS::ECS::Cluster",
+      "category": "Compute",
+      "iconPath": "mdi:docker",
+      "description": "Managed container orchestration cluster",
+      "cfProperties": {
+        "required": [],
+        "optional": ["ClusterName", "CapacityProviders", "DefaultCapacityProviderStrategy", "ClusterSettings", "Configuration", "Tags"]
+      },
+      "defaultProperties": {
+        "CapacityProviders": ["FARGATE", "FARGATE_SPOT"],
+        "ClusterSettings": [{ "Name": "containerInsights", "Value": "enabled" }]
+      }
+    },
+    {
+      "id": "aws-ecs-taskdefinition",
+      "name": "ECS Task Definition",
+      "resourceType": "AWS::ECS::TaskDefinition",
+      "category": "Compute",
+      "iconPath": "mdi:clipboard-list",
+      "description": "Container task blueprint for ECS",
+      "cfProperties": {
+        "required": ["ContainerDefinitions"],
+        "optional": ["Family", "TaskRoleArn", "ExecutionRoleArn", "NetworkMode", "Cpu", "Memory", "RequiresCompatibilities", "Volumes", "Tags"]
+      },
+      "defaultProperties": {
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": ["FARGATE"],
+        "Cpu": "256",
+        "Memory": "512"
+      }
+    },
+    {
+      "id": "aws-eks-cluster",
+      "name": "EKS Cluster",
+      "resourceType": "AWS::EKS::Cluster",
+      "category": "Compute",
+      "iconPath": "mdi:kubernetes",
+      "description": "Managed Kubernetes cluster",
+      "cfProperties": {
+        "required": ["ResourcesVpcConfig", "RoleArn"],
+        "optional": ["Name", "Version", "KubernetesNetworkConfig", "Logging", "EncryptionConfig", "Tags"]
+      },
+      "defaultProperties": {
+        "Version": "1.30",
+        "Logging": {
+          "ClusterLogging": {
+            "EnabledTypes": [
+              { "Type": "api" },
+              { "Type": "audit" }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "aws-s3-bucket",
+      "name": "S3 Bucket",
+      "resourceType": "AWS::S3::Bucket",
+      "category": "Storage",
+      "iconPath": "mdi:bucket",
+      "description": "Scalable object storage",
+      "cfProperties": {
+        "required": [],
+        "optional": ["BucketName", "AccessControl", "BucketEncryption", "PublicAccessBlockConfiguration", "VersioningConfiguration", "LifecycleConfiguration", "LoggingConfiguration", "Tags"]
+      },
+      "defaultProperties": {
+        "AccessControl": "Private",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            { "ServerSideEncryptionByDefault": { "SSEAlgorithm": "aws:kms" } }
+          ]
+        },
+        "VersioningConfiguration": { "Status": "Enabled" }
+      }
+    },
+    {
+      "id": "aws-efs-filesystem",
+      "name": "EFS File System",
+      "resourceType": "AWS::EFS::FileSystem",
+      "category": "Storage",
+      "iconPath": "mdi:folder-network",
+      "description": "Managed elastic NFS file system",
+      "cfProperties": {
+        "required": [],
+        "optional": ["Encrypted", "KmsKeyId", "PerformanceMode", "ThroughputMode", "ProvisionedThroughputInMibps", "LifecyclePolicies", "BackupPolicy", "FileSystemTags"]
+      },
+      "defaultProperties": {
+        "Encrypted": true,
+        "PerformanceMode": "generalPurpose",
+        "ThroughputMode": "bursting",
+        "BackupPolicy": { "Status": "ENABLED" }
+      }
+    },
+    {
+      "id": "aws-rds-instance",
+      "name": "RDS DB Instance",
+      "resourceType": "AWS::RDS::DBInstance",
+      "category": "Databases",
+      "iconPath": "mdi:database",
+      "description": "Managed relational database instance",
+      "cfProperties": {
+        "required": ["DBInstanceClass", "Engine"],
+        "optional": ["DBInstanceIdentifier", "DBName", "MasterUsername", "MasterUserPassword", "AllocatedStorage", "StorageType", "StorageEncrypted", "KmsKeyId", "MultiAZ", "BackupRetentionPeriod", "DBSubnetGroupName", "VPCSecurityGroups", "Tags"]
+      },
+      "defaultProperties": {
+        "DBInstanceClass": "db.t3.medium",
+        "Engine": "postgres",
+        "EngineVersion": "15.4",
+        "StorageType": "gp3",
+        "AllocatedStorage": "20",
+        "StorageEncrypted": true,
+        "MultiAZ": true,
+        "BackupRetentionPeriod": 7,
+        "DeletionProtection": true
+      }
+    },
+    {
+      "id": "aws-rds-cluster",
+      "name": "RDS DB Cluster (Aurora)",
+      "resourceType": "AWS::RDS::DBCluster",
+      "category": "Databases",
+      "iconPath": "mdi:database-check",
+      "description": "Aurora managed relational database cluster",
+      "cfProperties": {
+        "required": ["Engine"],
+        "optional": ["DBClusterIdentifier", "MasterUsername", "MasterUserPassword", "DatabaseName", "EngineVersion", "EngineMode", "StorageEncrypted", "KmsKeyId", "BackupRetentionPeriod", "DBSubnetGroupName", "VpcSecurityGroupIds", "DeletionProtection", "Tags"]
+      },
+      "defaultProperties": {
+        "Engine": "aurora-postgresql",
+        "EngineVersion": "15.4",
+        "EngineMode": "provisioned",
+        "StorageEncrypted": true,
+        "BackupRetentionPeriod": 7,
+        "DeletionProtection": true
+      }
+    },
+    {
+      "id": "aws-dynamodb-table",
+      "name": "DynamoDB Table",
+      "resourceType": "AWS::DynamoDB::Table",
+      "category": "Databases",
+      "iconPath": "mdi:table",
+      "description": "Serverless key-value and document database",
+      "cfProperties": {
+        "required": ["KeySchema", "AttributeDefinitions"],
+        "optional": ["TableName", "BillingMode", "ProvisionedThroughput", "SSESpecification", "StreamSpecification", "TimeToLiveSpecification", "GlobalSecondaryIndexes", "LocalSecondaryIndexes", "Tags"]
+      },
+      "defaultProperties": {
+        "BillingMode": "PAY_PER_REQUEST",
+        "SSESpecification": { "SSEEnabled": true }
+      }
+    },
+    {
+      "id": "aws-dynamodb-global-table",
+      "name": "DynamoDB Global Table",
+      "resourceType": "AWS::DynamoDB::GlobalTable",
+      "category": "Databases",
+      "iconPath": "mdi:table-sync",
+      "description": "Multi-region active-active DynamoDB table",
+      "cfProperties": {
+        "required": ["KeySchema", "AttributeDefinitions", "Replicas"],
+        "optional": ["TableName", "BillingMode", "WriteProvisionedThroughputSettings", "SSESpecification", "StreamSpecification", "TimeToLiveSpecification", "GlobalSecondaryIndexes"]
+      },
+      "defaultProperties": {
+        "BillingMode": "PAY_PER_REQUEST",
+        "SSESpecification": { "SSEEnabled": true }
+      }
+    },
+    {
+      "id": "aws-elasticache-cluster",
+      "name": "ElastiCache Cluster",
+      "resourceType": "AWS::ElastiCache::CacheCluster",
+      "category": "Databases",
+      "iconPath": "mdi:memory",
+      "description": "Managed in-memory cache (Redis/Memcached)",
+      "cfProperties": {
+        "required": ["CacheNodeType", "Engine", "NumCacheNodes"],
+        "optional": ["ClusterName", "EngineVersion", "CacheSubnetGroupName", "VpcSecurityGroupIds", "AutoMinorVersionUpgrade", "SnapshotRetentionLimit", "Tags"]
+      },
+      "defaultProperties": {
+        "Engine": "redis",
+        "CacheNodeType": "cache.t3.medium",
+        "NumCacheNodes": 1,
+        "AutoMinorVersionUpgrade": true,
+        "SnapshotRetentionLimit": 1
+      }
+    },
+    {
+      "id": "aws-redshift-cluster",
+      "name": "Redshift Cluster",
+      "resourceType": "AWS::Redshift::Cluster",
+      "category": "Analytics",
+      "iconPath": "mdi:warehouse",
+      "description": "Petabyte-scale data warehouse",
+      "cfProperties": {
+        "required": ["ClusterType", "DBName", "MasterUsername", "MasterUserPassword", "NodeType"],
+        "optional": ["ClusterIdentifier", "NumberOfNodes", "ClusterSubnetGroupName", "VpcSecurityGroupIds", "Encrypted", "KmsKeyId", "AutomatedSnapshotRetentionPeriod", "Tags"]
+      },
+      "defaultProperties": {
+        "ClusterType": "multi-node",
+        "NodeType": "ra3.xlplus",
+        "NumberOfNodes": 2,
+        "Encrypted": true,
+        "AutomatedSnapshotRetentionPeriod": 7
+      }
+    },
+    {
+      "id": "aws-bedrock-agent",
+      "name": "Bedrock Agent",
+      "resourceType": "AWS::Bedrock::Agent",
+      "category": "AI",
+      "iconPath": "mdi:brain",
+      "description": "Generative AI agent backed by Amazon Bedrock",
+      "cfProperties": {
+        "required": ["AgentName", "AgentResourceRoleArn", "FoundationModel"],
+        "optional": ["Description", "Instruction", "IdleSessionTTLInSeconds", "KnowledgeBases", "ActionGroups", "Tags"]
+      },
+      "defaultProperties": {
+        "FoundationModel": "amazon.nova-pro-v1:0",
+        "IdleSessionTTLInSeconds": 1800
+      }
+    },
+    {
+      "id": "aws-sagemaker-notebook",
+      "name": "SageMaker Notebook",
+      "resourceType": "AWS::SageMaker::NotebookInstance",
+      "category": "AI",
+      "iconPath": "mdi:robot",
+      "description": "Managed ML notebook instance",
+      "cfProperties": {
+        "required": ["InstanceType", "RoleArn"],
+        "optional": ["NotebookInstanceName", "SubnetId", "SecurityGroupIds", "KmsKeyId", "VolumeSizeInGB", "DirectInternetAccess", "RootAccess", "Tags"]
+      },
+      "defaultProperties": {
+        "InstanceType": "ml.t3.medium",
+        "VolumeSizeInGB": 5,
+        "DirectInternetAccess": "Disabled",
+        "RootAccess": "Disabled"
+      }
+    },
+    {
+      "id": "aws-iam-role",
+      "name": "IAM Role",
+      "resourceType": "AWS::IAM::Role",
+      "category": "Security",
+      "iconPath": "mdi:account-key",
+      "description": "Identity with permission policies",
+      "cfProperties": {
+        "required": ["AssumeRolePolicyDocument"],
+        "optional": ["RoleName", "Description", "Path", "ManagedPolicyArns", "Policies", "PermissionsBoundary", "MaxSessionDuration", "Tags"]
+      },
+      "defaultProperties": {
+        "MaxSessionDuration": 3600
+      }
+    },
+    {
+      "id": "aws-secretsmanager-secret",
+      "name": "Secrets Manager Secret",
+      "resourceType": "AWS::SecretsManager::Secret",
+      "category": "Security",
+      "iconPath": "mdi:safe",
+      "description": "Securely store and rotate secrets",
+      "cfProperties": {
+        "required": [],
+        "optional": ["Name", "Description", "SecretString", "GenerateSecretString", "KmsKeyId", "ReplicaRegions", "Tags"]
+      },
+      "defaultProperties": {
+        "GenerateSecretString": {
+          "PasswordLength": 32,
+          "ExcludeCharacters": "\"@/\\"
+        }
+      }
+    },
+    {
+      "id": "aws-kms-key",
+      "name": "KMS Key",
+      "resourceType": "AWS::KMS::Key",
+      "category": "Security",
+      "iconPath": "mdi:key",
+      "description": "Customer-managed encryption key",
+      "cfProperties": {
+        "required": ["KeyPolicy"],
+        "optional": ["Description", "Enabled", "EnableKeyRotation", "KeySpec", "KeyUsage", "MultiRegion", "PendingWindowInDays", "Tags"]
+      },
+      "defaultProperties": {
+        "Enabled": true,
+        "EnableKeyRotation": true,
+        "KeySpec": "SYMMETRIC_DEFAULT",
+        "KeyUsage": "ENCRYPT_DECRYPT",
+        "MultiRegion": false,
+        "PendingWindowInDays": 30
+      }
+    },
+    {
+      "id": "aws-sqs-queue",
+      "name": "SQS Queue",
+      "resourceType": "AWS::SQS::Queue",
+      "category": "Integration",
+      "iconPath": "mdi:tray-full",
+      "description": "Managed message queue service",
+      "cfProperties": {
+        "required": [],
+        "optional": ["QueueName", "FifoQueue", "ContentBasedDeduplication", "VisibilityTimeout", "MessageRetentionPeriod", "MaximumMessageSize", "ReceiveMessageWaitTimeSeconds", "KmsMasterKeyId", "RedrivePolicy", "Tags"]
+      },
+      "defaultProperties": {
+        "VisibilityTimeout": 30,
+        "MessageRetentionPeriod": 345600,
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "KmsMasterKeyId": "alias/aws/sqs"
+      }
+    },
+    {
+      "id": "aws-sns-topic",
+      "name": "SNS Topic",
+      "resourceType": "AWS::SNS::Topic",
+      "category": "Integration",
+      "iconPath": "mdi:bell-ring",
+      "description": "Pub/sub messaging and notifications",
+      "cfProperties": {
+        "required": [],
+        "optional": ["TopicName", "DisplayName", "FifoTopic", "ContentBasedDeduplication", "KmsMasterKeyId", "Subscription", "Tags"]
+      },
+      "defaultProperties": {
+        "KmsMasterKeyId": "alias/aws/sns"
+      }
+    },
+    {
+      "id": "aws-events-rule",
+      "name": "EventBridge Rule",
+      "resourceType": "AWS::Events::Rule",
+      "category": "Integration",
+      "iconPath": "mdi:calendar-clock",
+      "description": "Serverless event routing rule",
+      "cfProperties": {
+        "required": [],
+        "optional": ["Name", "Description", "EventBusName", "EventPattern", "ScheduleExpression", "State", "Targets", "RoleArn"]
+      },
+      "defaultProperties": {
+        "State": "ENABLED",
+        "EventBusName": "default"
+      }
+    },
+    {
+      "id": "aws-stepfunctions-statemachine",
+      "name": "Step Functions State Machine",
+      "resourceType": "AWS::StepFunctions::StateMachine",
+      "category": "Integration",
+      "iconPath": "mdi:state-machine",
+      "description": "Visual serverless workflow orchestrator",
+      "cfProperties": {
+        "required": ["RoleArn"],
+        "optional": ["StateMachineName", "StateMachineType", "DefinitionString", "DefinitionS3Location", "DefinitionSubstitutions", "LoggingConfiguration", "TracingConfiguration", "Tags"]
+      },
+      "defaultProperties": {
+        "StateMachineType": "STANDARD",
+        "TracingConfiguration": { "Enabled": true },
+        "LoggingConfiguration": {
+          "Level": "ERROR",
+          "IncludeExecutionData": false
+        }
+      }
+    },
+    {
+      "id": "aws-apigateway-restapi",
+      "name": "API Gateway REST API",
+      "resourceType": "AWS::ApiGateway::RestApi",
+      "category": "Integration",
+      "iconPath": "mdi:api",
+      "description": "Managed REST API gateway",
+      "cfProperties": {
+        "required": ["Name"],
+        "optional": ["Description", "EndpointConfiguration", "Body", "BodyS3Location", "MinimumCompressionSize", "ApiKeySourceType", "Policy", "Tags"]
+      },
+      "defaultProperties": {
+        "EndpointConfiguration": { "Types": ["REGIONAL"] },
+        "MinimumCompressionSize": 1024
+      }
+    },
+    {
+      "id": "aws-apigatewayv2-api",
+      "name": "API Gateway HTTP API",
+      "resourceType": "AWS::ApiGatewayV2::Api",
+      "category": "Integration",
+      "iconPath": "mdi:web",
+      "description": "Managed HTTP or WebSocket API",
+      "cfProperties": {
+        "required": ["Name", "ProtocolType"],
+        "optional": ["Description", "RouteSelectionExpression", "CorsConfiguration", "DisableExecuteApiEndpoint", "Body", "Tags"]
+      },
+      "defaultProperties": {
+        "ProtocolType": "HTTP",
+        "DisableExecuteApiEndpoint": false
+      }
+    },
+    {
+      "id": "aws-glue-job",
+      "name": "Glue Job",
+      "resourceType": "AWS::Glue::Job",
+      "category": "Analytics",
+      "iconPath": "mdi:puzzle",
+      "description": "Serverless ETL job",
+      "cfProperties": {
+        "required": ["Command", "Role"],
+        "optional": ["Name", "Description", "GlueVersion", "WorkerType", "NumberOfWorkers", "MaxRetries", "Timeout", "DefaultArguments", "Connections", "SecurityConfiguration", "Tags"]
+      },
+      "defaultProperties": {
+        "GlueVersion": "4.0",
+        "WorkerType": "G.1X",
+        "NumberOfWorkers": 2,
+        "MaxRetries": 1,
+        "Timeout": 2880
+      }
+    },
+    {
+      "id": "aws-kinesis-stream",
+      "name": "Kinesis Stream",
+      "resourceType": "AWS::Kinesis::Stream",
+      "category": "Analytics",
+      "iconPath": "mdi:waves",
+      "description": "Real-time data streaming",
+      "cfProperties": {
+        "required": [],
+        "optional": ["Name", "ShardCount", "RetentionPeriodHours", "StreamModeDetails", "StreamEncryption", "Tags"]
+      },
+      "defaultProperties": {
+        "RetentionPeriodHours": 24,
+        "StreamModeDetails": { "StreamMode": "ON_DEMAND" },
+        "StreamEncryption": {
+          "EncryptionType": "KMS",
+          "KeyId": "alias/aws/kinesis"
+        }
+      }
+    },
+    {
+      "id": "aws-athena-workgroup",
+      "name": "Athena WorkGroup",
+      "resourceType": "AWS::Athena::WorkGroup",
+      "category": "Analytics",
+      "iconPath": "mdi:magnify",
+      "description": "Interactive SQL query engine over S3",
+      "cfProperties": {
+        "required": ["Name"],
+        "optional": ["Description", "State", "WorkGroupConfiguration", "RecursiveDeleteOption", "Tags"]
+      },
+      "defaultProperties": {
+        "State": "ENABLED",
+        "WorkGroupConfiguration": {
+          "EnforceWorkGroupConfiguration": true,
+          "ResultConfiguration": {
+            "EncryptionConfiguration": { "EncryptionOption": "SSE_KMS" }
+          },
+          "PublishCloudWatchMetricsEnabled": true
+        }
+      }
+    },
+    {
+      "id": "aws-logs-loggroup",
+      "name": "CloudWatch Log Group",
+      "resourceType": "AWS::Logs::LogGroup",
+      "category": "Monitoring",
+      "iconPath": "mdi:chart-line",
+      "description": "Centralised log storage and querying",
+      "cfProperties": {
+        "required": [],
+        "optional": ["LogGroupName", "RetentionInDays", "KmsKeyId", "Tags"]
+      },
+      "defaultProperties": {
+        "RetentionInDays": 90,
+        "KmsKeyId": "alias/aws/logs"
+      }
+    },
+    {
+      "id": "aws-elasticloadbalancingv2-loadbalancer",
+      "name": "Application Load Balancer",
+      "resourceType": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "category": "Networking",
+      "iconPath": "mdi:scale-balance",
+      "description": "Layer-7 HTTP/HTTPS load balancer",
+      "cfProperties": {
+        "required": ["Subnets"],
+        "optional": ["Name", "Type", "Scheme", "SecurityGroups", "LoadBalancerAttributes", "IpAddressType", "Tags"]
+      },
+      "defaultProperties": {
+        "Type": "application",
+        "Scheme": "internal",
+        "IpAddressType": "ipv4",
+        "LoadBalancerAttributes": [
+          { "Key": "deletion_protection.enabled", "Value": "true" },
+          { "Key": "access_logs.s3.enabled", "Value": "true" }
+        ]
+      }
+    },
+    {
+      "id": "aws-cloudfront-distribution",
+      "name": "CloudFront Distribution",
+      "resourceType": "AWS::CloudFront::Distribution",
+      "category": "Networking",
+      "iconPath": "mdi:earth",
+      "description": "Global CDN for low-latency content delivery",
+      "cfProperties": {
+        "required": ["DistributionConfig"],
+        "optional": ["Tags"]
+      },
+      "defaultProperties": {
+        "DistributionConfig": {
+          "Enabled": true,
+          "HttpVersion": "http2and3",
+          "IPV6Enabled": true,
+          "PriceClass": "PriceClass_100",
+          "DefaultCacheBehavior": {
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "Compress": true
+          }
+        }
+      }
+    },
+    {
+      "id": "aws-cognito-userpool",
+      "name": "Cognito User Pool",
+      "resourceType": "AWS::Cognito::UserPool",
+      "category": "Security",
+      "iconPath": "mdi:account-group",
+      "description": "Managed user directory and authentication",
+      "cfProperties": {
+        "required": [],
+        "optional": ["UserPoolName", "UsernameAttributes", "AutoVerifiedAttributes", "Policies", "MfaConfiguration", "Schema", "EmailConfiguration", "SmsConfiguration", "AdminCreateUserConfig", "AccountRecoverySetting", "UserPoolTags", "DeletionProtection"]
+      },
+      "defaultProperties": {
+        "DeletionProtection": "ACTIVE",
+        "MfaConfiguration": "OPTIONAL",
+        "AutoVerifiedAttributes": ["email"],
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 12,
+            "RequireUppercase": true,
+            "RequireLowercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true
+          }
+        },
+        "AccountRecoverySetting": {
+          "RecoveryMechanisms": [{ "Name": "verified_email", "Priority": 1 }]
+        }
+      }
+    }
+  ],
+  "categories": [
+    "Compute",
+    "Storage",
+    "Databases",
+    "AI",
+    "Analytics",
+    "Security",
+    "Integration",
+    "Monitoring",
+    "Networking"
+  ]
+}

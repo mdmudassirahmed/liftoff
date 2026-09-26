@@ -146,16 +146,16 @@ function ServiceNodeComponent({ data, selected, id }: NodeProps) {
           type="source"
           position={Position.Left}
           id="left"
-          className="w-3 h-3 !bg-azure-blue border-2 border-white"
+          className={cn('w-3 h-3 border-2 border-white', nodeData.csp === 'aws' ? '!bg-[#FF9900]' : '!bg-azure-blue')}
         />
 
         {/* Node Content */}
         <div className="flex items-start gap-3">
           {/* Icon - Uses Iconify */}
-          <div className="flex-shrink-0 w-10 h-10 rounded-md bg-azure-blue/10 flex items-center justify-center">
-            <Icon 
-              icon={getAzureServiceIcon(iconPath)} 
-              className="w-6 h-6 text-azure-blue" 
+          <div className={cn('flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center', nodeData.csp === 'aws' ? 'bg-[#FF9900]/10' : 'bg-azure-blue/10')}>
+            <Icon
+              icon={nodeData.csp === 'aws' ? (iconPath || 'mdi:aws') : getAzureServiceIcon(iconPath)}
+              className={cn('w-6 h-6', nodeData.csp === 'aws' ? 'text-[#FF9900]' : 'text-azure-blue')}
             />
           </div>
 
@@ -189,7 +189,7 @@ function ServiceNodeComponent({ data, selected, id }: NodeProps) {
           type="source"
           position={Position.Right}
           id="right"
-          className="w-3 h-3 !bg-azure-blue border-2 border-white"
+          className={cn('w-3 h-3 border-2 border-white', nodeData.csp === 'aws' ? '!bg-[#FF9900]' : '!bg-azure-blue')}
         />
       </div>
       )}

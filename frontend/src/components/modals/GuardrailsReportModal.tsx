@@ -195,9 +195,12 @@ function GuardrailRow({ g }: { g: ComplianceGuardrail }) {
               <span className="font-medium text-gray-600">Benchmark:</span> {g.benchmark}
             </div>
           )}
-          {g.azure_policy && (
+          {g.policy && (
             <div>
-              <span className="font-medium text-gray-600">Azure Policy:</span> {g.azure_policy}
+              <span className="font-medium text-gray-600">
+                {g.benchmark?.startsWith('AWS') ? 'AWS Config rule:' : 'Azure Policy:'}
+              </span>{' '}
+              {g.policy}
             </div>
           )}
           <div>

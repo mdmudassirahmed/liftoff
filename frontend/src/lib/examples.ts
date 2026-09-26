@@ -19,6 +19,7 @@ const TITLES: Record<string, string> = {
   'web-app-sql': 'Web App + SQL',
   'serverless-ai': 'Serverless AI',
   'aks-microservices': 'AKS Microservices',
+  'aws-serverless-api': 'AWS Serverless API',
 };
 
 function titleFromName(name: string): string {

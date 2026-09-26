@@ -9,6 +9,7 @@ class IaCFormat(str, Enum):
     BICEP = "bicep"
     TERRAFORM = "terraform"
     ARM = "arm"
+    CLOUDFORMATION = "cloudformation"
 
 
 class IaCRequest(BaseModel):
@@ -19,7 +20,11 @@ class IaCRequest(BaseModel):
     )
     format: IaCFormat = Field(
         default=IaCFormat.BICEP,
-        description="Output format: bicep, terraform, or arm"
+        description="Output format: bicep, terraform, arm, or cloudformation"
+    )
+    csp: Optional[str] = Field(
+        default=None,
+        description="Cloud: azure or aws (detected from the diagram when omitted)"
     )
     include_comments: bool = Field(
         default=True,

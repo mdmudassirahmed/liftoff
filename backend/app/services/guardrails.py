@@ -65,6 +65,24 @@ def _categorize(status: str, recommendation: str, risk: str) -> str:
     return "guidance"
 
 
+def detect_cloud(architecture: Dict[str, Any]) -> str:
+    """Return "AWS" when the diagram's resources are AWS types (AWS::Service::Type),
+    otherwise "AZURE". Mixed diagrams count as whichever cloud has more resources."""
+    aws = azure = 0
+    try:
+        for node in (architecture.get("nodes") or []):
+            if not isinstance(node, dict):
+                continue
+            rt = str((node.get("data") or {}).get("resourceType") or node.get("resourceType") or "")
+            if rt.startswith("AWS::"):
+                aws += 1
+            elif rt.startswith("Microsoft."):
+                azure += 1
+    except Exception:  # noqa: BLE001 - fail-safe by design
+        return "AZURE"
+    return "AWS" if aws > azure else "AZURE"
+
+
 # --------------------------------------------------------------------------- #
 # Enablement / loading
 # --------------------------------------------------------------------------- #
@@ -147,7 +165,7 @@ def _dedupe(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return out
 
 
-def match_guardrails(architecture: Dict[str, Any], csp: str = "AZURE") -> Dict[str, Any]:
+def match_guardrails(architecture: Dict[str, Any], csp: Optional[str] = None) -> Dict[str, Any]:
     """
     Match user-actionable guardrails to a diagram.
 
@@ -162,6 +180,7 @@ def match_guardrails(architecture: Dict[str, Any], csp: str = "AZURE") -> Dict[s
     """
     empty = {"by_resource": {}, "environment": [], "resource_count": 0, "environment_count": 0}
     try:
+        csp = csp or detect_cloud(architecture)
         rows = load_catalog(csp=csp, user_actionable_only=True)
         if not rows:
             return empty
@@ -310,6 +329,38 @@ _ENFORCED_PROPERTIES: Dict[str, List[str]] = {
     "Microsoft.CognitiveServices/accounts": [
         "properties.publicNetworkAccess: 'Disabled'",
     ],
+    # AWS entries use CloudFormation property names.
+    "AWS::S3::Bucket": [
+        "Properties.PublicAccessBlockConfiguration: BlockPublicAcls/BlockPublicPolicy/IgnorePublicAcls/RestrictPublicBuckets all true",
+        "Properties.BucketEncryption.ServerSideEncryptionConfiguration[].ServerSideEncryptionByDefault.SSEAlgorithm: aws:kms (or AES256)",
+        "Properties.VersioningConfiguration.Status: Enabled",
+        "AWS::S3::BucketPolicy denying requests where aws:SecureTransport is false",
+    ],
+    "AWS::RDS::DBInstance": [
+        "Properties.PubliclyAccessible: false",
+        "Properties.StorageEncrypted: true",
+        "Properties.MultiAZ: true",
+        "Properties.DeletionProtection: true",
+    ],
+    "AWS::EC2::Instance": [
+        "Properties.MetadataOptions.HttpTokens: required",
+        "Properties.NetworkInterfaces[].AssociatePublicIpAddress: false",
+        "Properties.BlockDeviceMappings[].Ebs.Encrypted: true",
+    ],
+    "AWS::DynamoDB::Table": [
+        "Properties.PointInTimeRecoverySpecification.PointInTimeRecoveryEnabled: true",
+        "Properties.SSESpecification.SSEEnabled: true",
+    ],
+    "AWS::SQS::Queue": [
+        "Properties.SqsManagedSseEnabled: true (or KmsMasterKeyId)",
+    ],
+    "AWS::EKS::Cluster": [
+        "Properties.ResourcesVpcConfig.EndpointPublicAccess: false",
+        "Properties.ResourcesVpcConfig.EndpointPrivateAccess: true",
+    ],
+    "AWS::KMS::Key": [
+        "Properties.EnableKeyRotation: true",
+    ],
 }
 
 # Resource types whose enforced baseline turns public network access OFF. An
@@ -437,7 +488,12 @@ def build_enforced_properties(matched: Dict[str, Any], fmt: str = "bicep") -> st
                 lines.extend(f"  - {p}" for p in props)
         if not lines:
             return ""
-        tf_note = " (use the snake_case Terraform equivalents)" if str(fmt).lower() == "terraform" else ""
+        if any(rt.startswith("aws::") for rt in present):
+            tf_note = " (CloudFormation property names)"
+        elif str(fmt).lower() == "terraform":
+            tf_note = " (use the snake_case Terraform equivalents)"
+        else:
+            tf_note = ""
         header = (
             "\n\nMANDATORY SECURE PROPERTIES (non-negotiable){note} - set "
             "EXACTLY these values on the matching resources so the template is "
@@ -687,6 +743,95 @@ _CHECKS: List[Dict[str, Any]] = [
                      "publicnetworkaccess", "public network access"],
         "detect": lambda t: _prop_value(t, "publicNetworkAccess", ["Disabled"]) or _prop_value(t, "defaultAction", ["Deny"]),
     },
+    # ------------------------------------------------------------------ AWS (CloudFormation)
+    {
+        "id": "aws-s3-block-public-access",
+        "resource_type": "AWS::S3::Bucket",
+        "title": "S3 bucket blocks all public access",
+        "severity": "critical",
+        "keywords": ["block public access", "public access"],
+        "detect": lambda t: _prop_affirmative(t, "RestrictPublicBuckets") and _prop_affirmative(t, "BlockPublicAcls"),
+    },
+    {
+        "id": "aws-s3-encryption",
+        "resource_type": "AWS::S3::Bucket",
+        "title": "S3 bucket encrypts objects at rest",
+        "severity": "high",
+        "keywords": ["encrypt"],
+        "detect": lambda t: bool(re.search(r"SSEAlgorithm\s*:", t)),
+    },
+    {
+        "id": "aws-s3-tls-only",
+        "resource_type": "AWS::S3::Bucket",
+        "title": "S3 bucket policy denies non-TLS requests",
+        "severity": "medium",
+        "keywords": ["ssl", "securetransport", "tls"],
+        "detect": lambda t: "aws:securetransport" in t.lower(),
+    },
+    {
+        "id": "aws-rds-no-public-access",
+        "resource_type": "AWS::RDS::DBInstance",
+        "title": "RDS instance is not publicly accessible",
+        "severity": "critical",
+        "keywords": ["public"],
+        "detect": lambda t: bool(re.search(r"PubliclyAccessible\s*:\s*[\"']?false", t, re.IGNORECASE)),
+    },
+    {
+        "id": "aws-rds-encryption",
+        "resource_type": "AWS::RDS::DBInstance",
+        "title": "RDS instance encrypts storage at rest",
+        "severity": "high",
+        "keywords": ["encrypt"],
+        "detect": lambda t: _prop_affirmative(t, "StorageEncrypted"),
+    },
+    {
+        "id": "aws-ec2-imdsv2",
+        "resource_type": "AWS::EC2::Instance",
+        "title": "EC2 instance requires IMDSv2",
+        "severity": "high",
+        "keywords": ["imdsv2", "instance metadata"],
+        "detect": lambda t: bool(re.search(r"HttpTokens\s*:\s*[\"']?required", t, re.IGNORECASE)),
+    },
+    {
+        "id": "aws-ec2-no-public-ip",
+        "resource_type": "AWS::EC2::Instance",
+        "title": "EC2 instance has no public IPv4 address",
+        "severity": "high",
+        "keywords": ["public ip"],
+        "detect": lambda t: bool(re.search(r"AssociatePublicIpAddress\s*:\s*[\"']?false", t, re.IGNORECASE)),
+    },
+    {
+        "id": "aws-dynamodb-pitr",
+        "resource_type": "AWS::DynamoDB::Table",
+        "title": "DynamoDB table has point-in-time recovery",
+        "severity": "medium",
+        "keywords": ["point-in-time"],
+        "detect": lambda t: _prop_affirmative(t, "PointInTimeRecoveryEnabled"),
+    },
+    {
+        "id": "aws-sqs-encryption",
+        "resource_type": "AWS::SQS::Queue",
+        "title": "SQS queue is encrypted at rest",
+        "severity": "medium",
+        "keywords": ["encrypt"],
+        "detect": lambda t: _prop_affirmative(t, "SqsManagedSseEnabled") or bool(re.search(r"KmsMasterKeyId\s*:", t)),
+    },
+    {
+        "id": "aws-eks-private-endpoint",
+        "resource_type": "AWS::EKS::Cluster",
+        "title": "EKS API endpoint is not publicly accessible",
+        "severity": "high",
+        "keywords": ["endpoint"],
+        "detect": lambda t: bool(re.search(r"EndpointPublicAccess\s*:\s*[\"']?false", t, re.IGNORECASE)),
+    },
+    {
+        "id": "aws-kms-rotation",
+        "resource_type": "AWS::KMS::Key",
+        "title": "KMS key rotation is enabled",
+        "severity": "medium",
+        "keywords": ["rotation"],
+        "detect": lambda t: _prop_affirmative(t, "EnableKeyRotation"),
+    },
 ]
 
 
@@ -702,17 +847,19 @@ def build_report(
     architecture: Dict[str, Any],
     generated: Union[str, List[Any], Dict[str, Any], None],
     fmt: str = "bicep",
-    csp: str = "AZURE",
+    csp: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """
     Build a ComplianceReport for a generated template set.
 
+    The cloud (AZURE / AWS) is detected from the diagram unless given.
     Returns None when guardrails are inactive (flag off or catalog missing) or on
     any error, so the caller attaches nothing and behavior is unchanged.
     """
     if not active():
         return None
     try:
+        csp = csp or detect_cloud(architecture)
         matched = match_guardrails(architecture, csp=csp)
         by_resource = matched.get("by_resource") or {}
         environment = matched.get("environment") or []
@@ -761,7 +908,7 @@ def build_report(
                 continue
             # Link to matched guardrails by keyword to flip their per-row status.
             for g in by_resource.get(present_types_lower[rt_lower], []):
-                hay = f"{g.get('recommendation','')} {g.get('risk','')} {g.get('azure_policy','')}".lower()
+                hay = f"{g.get('recommendation','')} {g.get('risk','')} {g.get('policy','')}".lower()
                 if any(kw in hay for kw in chk["keywords"]):
                     control = g.get("control_id")
                     # A failing check should not downgrade a pass from another check.
@@ -782,7 +929,7 @@ def build_report(
                 "recommendation": recommendation,
                 "risk": risk,
                 "benchmark": g.get("benchmark", ""),
-                "azure_policy": g.get("azure_policy", ""),
+                "policy": g.get("policy", ""),
             }
 
         by_resource_out = [

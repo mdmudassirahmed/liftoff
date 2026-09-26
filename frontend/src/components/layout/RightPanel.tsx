@@ -7,6 +7,7 @@ import { useDiagramStore } from '@/store';
 import { validateDiagram } from '@/lib/validationEngine';
 import { IssuesPanel } from './IssuesPanel';
 import { DynamicBicepPropertiesSection } from '@/components/properties/DynamicBicepPropertiesSection';
+import { DynamicCfPropertiesSection } from '@/components/properties/DynamicCfPropertiesSection';
 import { useAzureAccount } from '@/hooks';
 
 type TabType = 'properties' | 'issues';
@@ -106,6 +107,21 @@ function PropertiesContent() {
     { value: 'australiaeast', label: 'Australia East' },
   ];
 
+  const awsRegions = [
+    { value: 'us-east-1', label: 'US East (N. Virginia)' },
+    { value: 'us-east-2', label: 'US East (Ohio)' },
+    { value: 'us-west-1', label: 'US West (N. California)' },
+    { value: 'us-west-2', label: 'US West (Oregon)' },
+    { value: 'eu-west-1', label: 'EU (Ireland)' },
+    { value: 'eu-west-2', label: 'EU (London)' },
+    { value: 'eu-central-1', label: 'EU (Frankfurt)' },
+    { value: 'ap-southeast-1', label: 'Asia Pacific (Singapore)' },
+    { value: 'ap-southeast-2', label: 'Asia Pacific (Sydney)' },
+    { value: 'ap-northeast-1', label: 'Asia Pacific (Tokyo)' },
+    { value: 'ca-central-1', label: 'Canada (Central)' },
+    { value: 'sa-east-1', label: 'South America (Sao Paulo)' },
+  ];
+
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId),
     [nodes, selectedNodeId]
@@ -129,6 +145,13 @@ function PropertiesContent() {
 
   const isService = selectedNode.type === 'service';
   const data = selectedNode.data as Record<string, unknown>;
+  const isAwsNode = (data.csp as string) === 'aws';
+  const isAwsGroup = !isService && (
+    data.groupType === 'awsAccount' ||
+    data.groupType === 'awsRegion' ||
+    data.groupType === 'awsVpc' ||
+    data.groupType === 'awsSubnet'
+  );
 
   const handleUpdate = (key: string, value: unknown) => {
     updateNodeData(selectedNode.id, { [key]: value });
@@ -257,15 +280,15 @@ function PropertiesContent() {
             {/* Location */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Location
+                {isAwsNode ? 'AWS Region' : 'Location'}
               </label>
               <select
                 value={(data.location as string) || ''}
                 onChange={(e) => handleUpdate('location', e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-azure-blue focus:border-transparent"
               >
-                <option value="">Select location...</option>
-                {azureLocations.map((loc) => (
+                <option value="">Select {isAwsNode ? 'region' : 'location'}...</option>
+                {(isAwsNode ? awsRegions : azureLocations).map((loc) => (
                   <option key={loc.value} value={loc.value}>
                     {loc.label}
                   </option>
@@ -275,17 +298,26 @@ function PropertiesContent() {
           </div>
         </section>
 
-        {/* Service-specific properties - Dynamic from Bicep Schema */}
-        {isService && (
-          <DynamicBicepPropertiesSection 
+        {/* Service-specific properties - Dynamic from Bicep Schema (Azure only) */}
+        {isService && !isAwsNode && (
+          <DynamicBicepPropertiesSection
             resourceType={(data.resourceType as string) || ''}
             properties={(data.properties || {}) as Record<string, unknown>}
             onPropertyUpdate={handlePropertyUpdate}
           />
         )}
 
-        {/* Azure mapping (subscription / resource group nodes) */}
-        {!isService && (groupType === 'subscription' || groupType === 'resourceGroup') && (
+        {/* Service-specific properties - Dynamic from CloudFormation schema (AWS only) */}
+        {isService && isAwsNode && (
+          <DynamicCfPropertiesSection
+            resourceType={(data.resourceType as string) || ''}
+            properties={(data.properties || {}) as Record<string, unknown>}
+            onPropertyUpdate={handlePropertyUpdate}
+          />
+        )}
+
+        {/* Azure mapping (subscription / resource group nodes, Azure only) */}
+        {!isService && !isAwsGroup && (groupType === 'subscription' || groupType === 'resourceGroup') && (
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Azure Mapping
@@ -424,8 +456,8 @@ function PropertiesContent() {
           </section>
         )}
 
-        {/* VNet Integration (Services only) - references an existing network */}
-        {isService && (
+        {/* VNet Integration (Azure services only) - references an existing network */}
+        {isService && !isAwsNode && (
           <section>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               VNet Integration

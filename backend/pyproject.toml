@@ -1,6 +1,6 @@
 [project]
 name = "liftoff-backend"
-version = "1.1.0"
+version = "1.2.0"
 description = "Liftoff backend: diagram-to-IaC generation, security guardrails and Azure deployment API"
 readme = "README.md"
 license = "MIT"

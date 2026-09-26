@@ -235,10 +235,10 @@ class AgentsService {
    * Generate diagram from natural language prompt.
    * The JSON schema is handled by the backend - users only provide a simple description.
    */
-  async generateDiagramFromPrompt(prompt: string): Promise<DiagramFromPromptResponse> {
+  async generateDiagramFromPrompt(prompt: string, csp?: string): Promise<DiagramFromPromptResponse> {
     return this.request('/diagram/generate', {
       method: 'POST',
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, csp: csp || 'azure' }),
     });
   }
 

@@ -15,6 +15,7 @@ export interface IaCGenerationOptions {
   targetScope?: TargetScope;
   includeParameters?: boolean;
   includeOutputs?: boolean;
+  csp?: 'azure' | 'aws';
 }
 
 class IaCService {
@@ -47,6 +48,7 @@ class IaCService {
         includeParameters: options.includeParameters ?? true,
         includeOutputs: options.includeOutputs ?? true,
       },
+      csp: options.csp || 'azure',
     });
   }
 
@@ -80,6 +82,8 @@ class IaCService {
         return `${name}.json`;
       case 'terraform':
         return `${name}.tf`;
+      case 'cloudformation':
+        return `${name}.yaml`;
       default:
         return `${name}.txt`;
     }
@@ -93,6 +97,8 @@ class IaCService {
         return 'json';
       case 'terraform':
         return 'hcl';
+      case 'cloudformation':
+        return 'yaml';
       default:
         return 'plaintext';
     }

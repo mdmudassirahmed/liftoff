@@ -1,6 +1,12 @@
 import type { GroupTemplate, GroupType, VisualTemplate } from '@/types';
+import type { CSP } from '@/types';
 
-export const groupTemplates: GroupTemplate[] = [
+// Extend GroupTemplate with optional CSP field so AWS groups can be gated.
+export interface GroupTemplateWithCSP extends GroupTemplate {
+  csp?: CSP;
+}
+
+export const groupTemplates: GroupTemplateWithCSP[] = [
   {
     id: 'subscription',
     name: 'Subscription',
@@ -55,6 +61,47 @@ export const groupTemplates: GroupTemplate[] = [
     iconPath: 'azure:availability-zones',
     description: 'Availability Zone for high availability',
   },
+  // AWS group templates
+  {
+    id: 'aws-account',
+    name: 'AWS Account',
+    groupType: 'awsAccount',
+    defaultSize: { width: 900, height: 700 },
+    color: '#FF9900',
+    iconPath: 'mdi:cloud-outline',
+    description: 'AWS Account boundary',
+    csp: 'aws',
+  },
+  {
+    id: 'aws-region',
+    name: 'AWS Region',
+    groupType: 'awsRegion',
+    defaultSize: { width: 750, height: 550 },
+    color: '#232F3E',
+    iconPath: 'mdi:map-marker-outline',
+    description: 'AWS Region (e.g. us-east-1)',
+    csp: 'aws',
+  },
+  {
+    id: 'aws-vpc',
+    name: 'VPC (existing)',
+    groupType: 'awsVpc',
+    defaultSize: { width: 600, height: 400 },
+    color: '#8C4FFF',
+    iconPath: 'mdi:network-outline',
+    description: 'Existing VPC owned by your network team - referenced, not created',
+    csp: 'aws',
+  },
+  {
+    id: 'aws-subnet',
+    name: 'Subnet (existing)',
+    groupType: 'awsSubnet',
+    defaultSize: { width: 400, height: 250 },
+    color: '#1A73E8',
+    iconPath: 'mdi:lan-connect',
+    description: 'Existing subnet owned by your network team - referenced, not created',
+    csp: 'aws',
+  },
 ];
 
 export const groupColors: Record<GroupType, string> = {
@@ -64,6 +111,10 @@ export const groupColors: Record<GroupType, string> = {
   region: '#10B981',
   subscription: '#F59E0B',
   availabilityZone: '#8B5CF6',
+  awsAccount: '#FF9900',
+  awsRegion: '#232F3E',
+  awsVpc: '#8C4FFF',
+  awsSubnet: '#1A73E8',
 };
 
 export const groupLabels: Record<GroupType, string> = {
@@ -73,6 +124,10 @@ export const groupLabels: Record<GroupType, string> = {
   region: 'Region',
   subscription: 'Subscription',
   availabilityZone: 'Availability Zone',
+  awsAccount: 'AWS Account',
+  awsRegion: 'AWS Region',
+  awsVpc: 'VPC (existing)',
+  awsSubnet: 'Subnet (existing)',
 };
 
 export function getGroupTemplate(groupType: GroupType): GroupTemplate | undefined {

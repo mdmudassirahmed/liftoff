@@ -158,8 +158,8 @@ export function ImportDiagramModal({
       const nodes = parsed.nodes || [];
       const edges = parsed.edges || [];
       
-      const groups = nodes.filter((n: ImportedNode) => n.type === 'azure.group' || n.type === 'group');
-      const services = nodes.filter((n: ImportedNode) => n.type === 'azure.service' || n.type === 'service');
+      const groups = nodes.filter((n: ImportedNode) => n.type === 'azure.group' || n.type === 'group' || n.type === 'aws.group');
+      const services = nodes.filter((n: ImportedNode) => n.type === 'azure.service' || n.type === 'service' || n.type === 'aws.service');
       
       return {
         totalNodes: nodes.length,

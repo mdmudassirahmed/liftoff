@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import { useIaCStore, useDiagramStore } from '@/store';
+import { useCspStore } from '@/store/cspStore';
 import { iacService } from '@/services/iacService';
-import type { IaCFormat, TargetScope, GenerateIaCResponse, ExportDiagram } from '@/types';
+import type { IaCFormat, TargetScope, GenerateIaCResponse, ExportDiagram, SerializedDiagram } from '@/types';
 import { downloadFile, copyToClipboard } from '@/lib/utils';
 
 export interface UseIaCGenerationOptions {
@@ -15,8 +16,8 @@ export interface UseIaCGenerationOptions {
 export function useIaCGeneration(options: UseIaCGenerationOptions = {}) {
   const { format = 'bicep', targetScope = 'resourceGroup', useMcp = true } = options;
   
-  const serializeDiagram = useDiagramStore((state) => state.serializeDiagram);
   const getDiagramForExport = useDiagramStore((state) => state.getDiagramForExport);
+  const activeCsp = useCspStore((s) => s.activeCsp);
   const {
     generatedCode,
     isGenerating,
@@ -55,14 +56,20 @@ export function useIaCGeneration(options: UseIaCGenerationOptions = {}) {
       setGenerating(true);
 
       try {
-        const diagram = serializeDiagram();
-        const response = await iacService.generateBicep(diagram, {
-          format: overrideFormat || format,
-          targetScope,
-          useMcp,
-        });
+        // Use getDiagramForExport so node types carry the CSP prefix
+        // (aws.service / aws.group vs azure.service / azure.group)
+        const exportDiagram = getDiagramForExport();
+        const resolvedFormat = overrideFormat || format;
+        // cloudformation always implies aws CSP
+        const resolvedCsp = resolvedFormat === 'cloudformation' ? 'aws' : activeCsp;
+        // ExportDiagram has the same runtime shape as SerializedDiagram for the
+        // fields iacService reads (id, type, data, position, parentId)
+        const response = await iacService.generateBicep(
+          exportDiagram as unknown as SerializedDiagram,
+          { format: resolvedFormat, targetScope, useMcp, csp: resolvedCsp }
+        );
 
-        handleGenerationResponse(response);
+        handleGenerationResponse(response, resolvedCsp);
         return response;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to generate IaC';
@@ -71,7 +78,7 @@ export function useIaCGeneration(options: UseIaCGenerationOptions = {}) {
         return null;
       }
     },
-    [serializeDiagram, format, targetScope, useMcp, setGenerating, handleGenerationResponse]
+    [getDiagramForExport, format, targetScope, useMcp, activeCsp, setGenerating, handleGenerationResponse]
   );
 
   const generateBicep = useCallback(() => generateIaC('bicep'), [generateIaC]);

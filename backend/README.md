@@ -1,6 +1,6 @@
 # Liftoff backend
 
-FastAPI service behind the Liftoff canvas. It runs five agents (system prompts in
+FastAPI service behind the Liftoff canvas. It runs six agents (system prompts in
 `app/agents/prompts.py`) on the chat model you configure to turn diagrams into IaC,
 checks the output against security guardrails, and runs What-If and deployments with
 the Azure CLI. See the [root README](../README.md)
@@ -36,7 +36,10 @@ variables or `backend/.env`. See [`.env.example`](.env.example) for the full lis
 | `ALLOWED_HOSTS` | localhost, 127.0.0.1 | Host-header allow-list (DNS-rebinding protection) |
 | `API_AUTH_TOKEN` | *(empty)* | Require `Authorization: Bearer <token>` on `/api/*` |
 | `GUARDRAILS_ENABLED` | `true` | Inject security guardrails into prompts and return a compliance report |
-| `IAC_REFERENCE_EXISTING_NETWORKS` | `false` | Landing-zone mode: reference existing VNets instead of creating them |
+| `IAC_REFERENCE_EXISTING_NETWORKS` | `false` | Landing-zone mode: reference existing VNets/VPCs instead of creating them |
+| `AWS_DEFAULT_REGION`, `AWS_PROFILE`, `AWS_ASSUME_ROLE_ARN` | `us-east-1`, *(empty)* | AWS deployment target and credentials source (standard AWS chain) |
+| `AWS_ALLOWED_ACCOUNT_IDS` | *(empty)* | Comma-separated accounts deployments may target |
+| `AWS_PERMISSIONS_BOUNDARY_ARN` | *(empty)* | Optional permissions boundary added to generated IAM roles and Lambda functions |
 
 With no provider configured the AI endpoints return HTTP 503 with guidance and
 everything else works. Azure providers are reached keylessly with
@@ -52,14 +55,21 @@ Interactive docs: `http://127.0.0.1:8000/docs`.
 | Advisor chat | `POST /api/chat`, `/api/chat/stream`, `/api/chat/advisor`, `/api/chat/advisor/stream` |
 | IaC | `POST /api/iac/generate`, `POST /api/iac/validate`, `GET /api/iac/status` |
 | Deploy (Azure CLI) | `GET /api/deploy/status`, `/subscriptions`, `/resource-groups`; `POST /api/deploy/what-if`, `/what-if/stream`, `/validate`, `/`, `/logout` |
+| AWS | `POST /api/agents/aws/deploy` (CloudFormation change set, cfn-lint gate); `GET /api/agents/aws/cf-schema` |
 | Health | `GET /health`, `/api/health`, `/api/health/live`, `/api/health/ready`, `/api/health/agents` |
 
 ## Guardrails
 
-`app/data/guardrails/azure_guardrails.json` holds 100+ controls mapped to the
-Microsoft Cloud Security Benchmark and built-in Azure Policy definitions. It is
-generated from `scripts/build_guardrail_catalog.py`. To add a control, edit
-that script and run `python scripts/build_guardrail_catalog.py`.
+`app/data/guardrails/azure_guardrails.json` holds 137 controls: 106 for Azure
+(Microsoft Cloud Security Benchmark, built-in Azure Policy) and 31 for AWS (AWS
+Foundational Security Best Practices, AWS Config rules). It is generated from
+`scripts/build_guardrail_catalog.py`. To add a control, edit that script and run
+`python scripts/build_guardrail_catalog.py`.
+
+Clouds are plugins in `app/csp/` (`azure/`, `aws/`). The AWS plugin builds the
+CloudFormation prompt, post-processes the output (`cfn_yaml.py` understands
+`!Ref`/`!Sub`/`!GetAtt`), validates it with cfn-lint and splits it into modules.
+The advisor's Microsoft Learn grounding lives in `app/mcp/learn_mcp.py`.
 
 `app/services/guardrails.py` matches controls to the diagram, injects
 enforceable secure properties into the generation prompt, and runs

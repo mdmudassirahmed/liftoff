@@ -8,7 +8,7 @@
       "theme": "Data Protection",
       "severity": "High",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Secure transfer to storage accounts should be enabled",
+      "policy": "Secure transfer to storage accounts should be enabled",
       "risk": "Plain HTTP requests expose data and shared keys to interception in transit.",
       "recommendation": "Enable secure transfer (supportsHttpsTrafficOnly: true) so the account only accepts HTTPS requests.",
       "user_actionable": true
@@ -21,7 +21,7 @@
       "theme": "Public Access",
       "severity": "High",
       "benchmark": "MCSB DP-2",
-      "azure_policy": "Storage account public access should be disallowed",
+      "policy": "Storage account public access should be disallowed",
       "risk": "Anonymous containers let anyone on the internet list and read blob data.",
       "recommendation": "Disable anonymous public blob access (allowBlobPublicAccess: false) on the account.",
       "user_actionable": true
@@ -34,7 +34,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Storage accounts should have the specified minimum TLS version",
+      "policy": "Storage accounts should have the specified minimum TLS version",
       "risk": "Legacy TLS 1.0/1.1 protocols have known weaknesses that allow downgrade and decryption attacks.",
       "recommendation": "Require TLS 1.2 or later (minimumTlsVersion: 'TLS1_2').",
       "user_actionable": true
@@ -47,7 +47,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Storage accounts should disable public network access",
+      "policy": "Storage accounts should disable public network access",
       "risk": "A storage endpoint reachable from any network widens the attack surface for credential stuffing and data exfiltration.",
       "recommendation": "Disable public network access and set networkAcls defaultAction to 'Deny'; reach the account through a private endpoint or selected virtual networks, allowing trusted Microsoft services.",
       "user_actionable": true
@@ -60,7 +60,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-4",
-      "azure_policy": "Storage accounts should use customer-managed key for encryption",
+      "policy": "Storage accounts should use customer-managed key for encryption",
       "risk": "Without controlled encryption at rest, compromised media or backups could expose data.",
       "recommendation": "Keep storage service encryption (SSE) for encryption at rest enabled; use customer-managed keys in Key Vault when regulation requires key custody.",
       "user_actionable": true
@@ -73,7 +73,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Storage accounts should prevent shared key access",
+      "policy": "Storage accounts should prevent shared key access",
       "risk": "Account keys grant full, non-attributable access and are frequently leaked in code and config.",
       "recommendation": "Disable shared key authorization (allowSharedKeyAccess: false) and use Microsoft Entra ID with RBAC for data access.",
       "user_actionable": true
@@ -86,7 +86,7 @@
       "theme": "Data Protection",
       "severity": "Low",
       "benchmark": "MCSB BR-1",
-      "azure_policy": "Soft delete should be enabled for blobs and containers",
+      "policy": "Soft delete should be enabled for blobs and containers",
       "risk": "Accidental or malicious deletion becomes unrecoverable.",
       "recommendation": "Enable blob and container soft delete with a retention period of at least 7 days.",
       "user_actionable": true
@@ -99,7 +99,7 @@
       "theme": "Data Protection",
       "severity": "High",
       "benchmark": "MCSB DP-8",
-      "azure_policy": "Key vaults should have deletion protection enabled",
+      "policy": "Key vaults should have deletion protection enabled",
       "risk": "An attacker or mistake could permanently destroy keys, making encrypted data unrecoverable.",
       "recommendation": "Enable purge protection (enablePurgeProtection: true) so deleted vaults and secrets cannot be permanently purged during the retention period.",
       "user_actionable": true
@@ -112,7 +112,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-8",
-      "azure_policy": "Key vaults should have soft delete enabled",
+      "policy": "Key vaults should have soft delete enabled",
       "risk": "Deleted secrets, keys and certificates cannot be recovered.",
       "recommendation": "Keep soft delete enabled with softDeleteRetentionInDays set (90 recommended).",
       "user_actionable": true
@@ -125,7 +125,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Key Vault should disable public network access",
+      "policy": "Azure Key Vault should disable public network access",
       "risk": "A vault reachable from the public internet is exposed to brute-force and token replay attempts.",
       "recommendation": "Restrict the vault to private networks: publicNetworkAccess 'Disabled' with a private link endpoint, or networkAcls defaultAction 'Deny' with trusted service bypass.",
       "user_actionable": true
@@ -138,7 +138,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB PA-7",
-      "azure_policy": "Azure Key Vault should use RBAC permission model",
+      "policy": "Azure Key Vault should use RBAC permission model",
       "risk": "Access policies are coarse-grained and bypass central RBAC governance and PIM.",
       "recommendation": "Use the Azure RBAC permission model (enableRbacAuthorization: true) instead of vault access policies.",
       "user_actionable": true
@@ -151,7 +151,7 @@
       "theme": "Logging",
       "severity": "Medium",
       "benchmark": "MCSB LT-3",
-      "azure_policy": "Resource logs in Key Vault should be enabled",
+      "policy": "Resource logs in Key Vault should be enabled",
       "risk": "Secret access cannot be investigated after an incident.",
       "recommendation": "Send AuditEvent logs to a Log Analytics workspace through diagnostic settings.",
       "user_actionable": true
@@ -164,7 +164,7 @@
       "theme": "Data Protection",
       "severity": "Low",
       "benchmark": "MCSB DP-6",
-      "azure_policy": "Key Vault secrets should have an expiration date",
+      "policy": "Key Vault secrets should have an expiration date",
       "risk": "Long-lived secrets increase the blast radius of a leak.",
       "recommendation": "Set expiration dates on secrets and keys and rotate them before expiry.",
       "user_actionable": true
@@ -177,7 +177,7 @@
       "theme": "Data Protection",
       "severity": "High",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "App Service apps should only be accessible over HTTPS",
+      "policy": "App Service apps should only be accessible over HTTPS",
       "risk": "Traffic over plain HTTP can be intercepted or modified.",
       "recommendation": "Set httpsOnly: true so HTTP requests are redirected to HTTPS.",
       "user_actionable": true
@@ -190,7 +190,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "App Service apps should use the latest TLS version",
+      "policy": "App Service apps should use the latest TLS version",
       "risk": "Older TLS versions are vulnerable to protocol downgrade attacks.",
       "recommendation": "Require TLS 1.2 or later (siteConfig.minTlsVersion: '1.2').",
       "user_actionable": true
@@ -203,7 +203,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "App Service apps should disable public network access",
+      "policy": "App Service apps should disable public network access",
       "risk": "Internal workloads exposed to the internet invite scanning and exploitation.",
       "recommendation": "Disable public network access for internal apps and front them with a private endpoint, Application Gateway or Front Door.",
       "user_actionable": true
@@ -216,7 +216,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "App Service apps should use managed identity",
+      "policy": "App Service apps should use managed identity",
       "risk": "Embedded credentials leak through app settings, logs and source control.",
       "recommendation": "Enable a managed identity and use it to reach Key Vault, Storage and databases instead of connection strings.",
       "user_actionable": true
@@ -229,7 +229,7 @@
       "theme": "Posture",
       "severity": "Medium",
       "benchmark": "MCSB PV-2",
-      "azure_policy": "FTPS only should be required in App Service apps",
+      "policy": "FTPS only should be required in App Service apps",
       "risk": "FTP sends deployment credentials in clear text.",
       "recommendation": "Disable FTP deployment (siteConfig.ftpsState: 'Disabled' or 'FtpsOnly').",
       "user_actionable": true
@@ -242,7 +242,7 @@
       "theme": "Posture",
       "severity": "Low",
       "benchmark": "MCSB PV-2",
-      "azure_policy": "App Service apps should have remote debugging turned off",
+      "policy": "App Service apps should have remote debugging turned off",
       "risk": "Remote debugging opens additional inbound ports on the worker.",
       "recommendation": "Keep remote debugging disabled outside of short troubleshooting windows.",
       "user_actionable": true
@@ -255,7 +255,7 @@
       "theme": "Data Protection",
       "severity": "High",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Function apps should only be accessible over HTTPS",
+      "policy": "Function apps should only be accessible over HTTPS",
       "risk": "Function triggers over HTTP expose payloads and function keys.",
       "recommendation": "Set httpsOnly: true on the function app.",
       "user_actionable": true
@@ -268,7 +268,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Function apps should use the latest TLS version",
+      "policy": "Function apps should use the latest TLS version",
       "risk": "Older TLS versions are vulnerable to protocol downgrade attacks.",
       "recommendation": "Require TLS 1.2 or later (siteConfig.minTlsVersion: '1.2').",
       "user_actionable": true
@@ -281,7 +281,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Function apps should disable public network access",
+      "policy": "Function apps should disable public network access",
       "risk": "Publicly reachable function endpoints can be invoked or abused by anyone holding a leaked key.",
       "recommendation": "Disable public network access for internal functions and integrate the app with a virtual network.",
       "user_actionable": true
@@ -294,7 +294,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "Function apps should use managed identity",
+      "policy": "Function apps should use managed identity",
       "risk": "Storage account keys in app settings grant full account access if leaked.",
       "recommendation": "Use a managed identity for the AzureWebJobsStorage connection and downstream services (identity-based connections).",
       "user_actionable": true
@@ -307,7 +307,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Public network access on Azure SQL Database should be disabled",
+      "policy": "Public network access on Azure SQL Database should be disabled",
       "risk": "Internet-exposed SQL endpoints are continuously targeted by password spraying.",
       "recommendation": "Disable public network access (publicNetworkAccess: 'Disabled') and connect through a private endpoint.",
       "user_actionable": true
@@ -320,7 +320,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure SQL Database should have Microsoft Entra-only authentication enabled",
+      "policy": "Azure SQL Database should have Microsoft Entra-only authentication enabled",
       "risk": "SQL logins are shared secrets that bypass MFA and conditional access.",
       "recommendation": "Enable Microsoft Entra-only authentication and use managed identities for applications.",
       "user_actionable": true
@@ -333,7 +333,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Azure SQL Database should be running TLS version 1.2 or newer",
+      "policy": "Azure SQL Database should be running TLS version 1.2 or newer",
       "risk": "Older TLS versions are vulnerable to downgrade attacks.",
       "recommendation": "Set minimalTlsVersion to '1.2'.",
       "user_actionable": true
@@ -346,7 +346,7 @@
       "theme": "Logging",
       "severity": "Medium",
       "benchmark": "MCSB LT-3",
-      "azure_policy": "Auditing on SQL server should be enabled",
+      "policy": "Auditing on SQL server should be enabled",
       "risk": "Database access and schema changes cannot be traced.",
       "recommendation": "Enable server auditing to a Log Analytics workspace or storage account.",
       "user_actionable": true
@@ -359,7 +359,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-4",
-      "azure_policy": "Transparent Data Encryption on SQL databases should be enabled",
+      "policy": "Transparent Data Encryption on SQL databases should be enabled",
       "risk": "Database files and backups could be read if storage media is compromised.",
       "recommendation": "Keep Transparent Data Encryption enabled for encryption at rest.",
       "user_actionable": true
@@ -372,7 +372,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure SQL Managed Instances should disable public network access",
+      "policy": "Azure SQL Managed Instances should disable public network access",
       "risk": "The public endpoint exposes the instance to internet-based attacks.",
       "recommendation": "Keep the public data endpoint disabled and connect over the virtual network or a private endpoint.",
       "user_actionable": true
@@ -385,7 +385,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure SQL Managed Instance should have Microsoft Entra-only authentication enabled",
+      "policy": "Azure SQL Managed Instance should have Microsoft Entra-only authentication enabled",
       "risk": "SQL logins are shared secrets that bypass MFA.",
       "recommendation": "Enable Microsoft Entra-only authentication.",
       "user_actionable": true
@@ -398,7 +398,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Cosmos DB should disable public network access",
+      "policy": "Azure Cosmos DB should disable public network access",
       "risk": "Internet-reachable accounts are exposed to key abuse and data exfiltration.",
       "recommendation": "Disable public network access (publicNetworkAccess: 'Disabled') and use a private endpoint.",
       "user_actionable": true
@@ -411,7 +411,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Cosmos DB database accounts should have local authentication methods disabled",
+      "policy": "Cosmos DB database accounts should have local authentication methods disabled",
       "risk": "Primary keys grant full, non-attributable access to all data.",
       "recommendation": "Disable key-based auth (disableLocalAuth: true) and use Entra ID with Cosmos DB data-plane RBAC.",
       "user_actionable": true
@@ -424,7 +424,7 @@
       "theme": "Data Protection",
       "severity": "Low",
       "benchmark": "MCSB BR-1",
-      "azure_policy": "Azure Cosmos DB accounts should use continuous backup",
+      "policy": "Azure Cosmos DB accounts should use continuous backup",
       "risk": "Periodic backups may lose hours of data after corruption or deletion.",
       "recommendation": "Use continuous backup mode for point-in-time restore.",
       "user_actionable": true
@@ -437,7 +437,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Public network access should be disabled for PostgreSQL flexible servers",
+      "policy": "Public network access should be disabled for PostgreSQL flexible servers",
       "risk": "Publicly reachable database servers are exposed to credential attacks.",
       "recommendation": "Deploy with private access (VNet integration) or disable public network access and use a private endpoint.",
       "user_actionable": true
@@ -450,7 +450,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Enforce SSL connection should be enabled for PostgreSQL flexible servers",
+      "policy": "Enforce SSL connection should be enabled for PostgreSQL flexible servers",
       "risk": "Unencrypted database connections leak credentials and query data.",
       "recommendation": "Require secure transport (require_secure_transport = ON) with TLS 1.2 or later.",
       "user_actionable": true
@@ -463,7 +463,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "PostgreSQL flexible servers should use Microsoft Entra authentication",
+      "policy": "PostgreSQL flexible servers should use Microsoft Entra authentication",
       "risk": "Password-only authentication cannot enforce MFA or central revocation.",
       "recommendation": "Enable Microsoft Entra authentication and prefer managed identities for applications.",
       "user_actionable": true
@@ -476,7 +476,7 @@
       "theme": "Posture",
       "severity": "High",
       "benchmark": "MCSB PV-5",
-      "azure_policy": "Azure Database for PostgreSQL single server is retired",
+      "policy": "Azure Database for PostgreSQL single server is retired",
       "risk": "Single server is retired and no longer receives security updates.",
       "recommendation": "Migrate single-server deployments to Azure Database for PostgreSQL flexible server.",
       "user_actionable": true
@@ -489,7 +489,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Public network access should be disabled for MySQL flexible servers",
+      "policy": "Public network access should be disabled for MySQL flexible servers",
       "risk": "Publicly reachable database servers are exposed to credential attacks.",
       "recommendation": "Deploy with private access (VNet integration) or disable public network access and use a private endpoint.",
       "user_actionable": true
@@ -502,7 +502,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "MySQL servers should enforce TLS 1.2",
+      "policy": "MySQL servers should enforce TLS 1.2",
       "risk": "Unencrypted database connections leak credentials and query data.",
       "recommendation": "Require secure transport and set tls_version to TLSv1.2 or later.",
       "user_actionable": true
@@ -515,7 +515,7 @@
       "theme": "Posture",
       "severity": "High",
       "benchmark": "MCSB PV-5",
-      "azure_policy": "Azure Database for MySQL single server is retired",
+      "policy": "Azure Database for MySQL single server is retired",
       "risk": "Single server is retired and no longer receives security updates.",
       "recommendation": "Migrate single-server deployments to Azure Database for MySQL flexible server.",
       "user_actionable": true
@@ -528,7 +528,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure AI Services resources should restrict network access",
+      "policy": "Azure AI Services resources should restrict network access",
       "risk": "Model endpoints reachable from the internet can be abused for data exfiltration and cost attacks.",
       "recommendation": "Disable public network access (publicNetworkAccess: 'Disabled') and use a private endpoint, or set networkAcls defaultAction 'Deny'.",
       "user_actionable": true
@@ -541,7 +541,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure AI Services resources should have key access disabled",
+      "policy": "Azure AI Services resources should have key access disabled",
       "risk": "API keys are long-lived shared secrets and are frequently leaked.",
       "recommendation": "Disable local (key) authentication (disableLocalAuth: true) and use Microsoft Entra ID.",
       "user_actionable": true
@@ -554,7 +554,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure OpenAI resources should restrict network access",
+      "policy": "Azure OpenAI resources should restrict network access",
       "risk": "Publicly reachable model endpoints can be abused with leaked keys.",
       "recommendation": "Disable public network access (publicNetworkAccess: 'Disabled') and reach the endpoint through a private endpoint.",
       "user_actionable": true
@@ -567,7 +567,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure OpenAI resources should have key access disabled",
+      "policy": "Azure OpenAI resources should have key access disabled",
       "risk": "API keys bypass identity-based access control and auditing.",
       "recommendation": "Set disableLocalAuth: true and grant applications the 'Cognitive Services OpenAI User' role through managed identity.",
       "user_actionable": true
@@ -580,7 +580,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure AI Foundry hubs and projects should use private link",
+      "policy": "Azure AI Foundry hubs and projects should use private link",
       "risk": "Model, data and prompt traffic is exposed on public endpoints.",
       "recommendation": "Configure the hub with a managed virtual network (isolation mode) and private endpoints.",
       "user_actionable": true
@@ -593,7 +593,7 @@
       "theme": "Logging",
       "severity": "Medium",
       "benchmark": "MCSB LT-3",
-      "azure_policy": "Resource logs in Azure AI services should be enabled",
+      "policy": "Resource logs in Azure AI services should be enabled",
       "risk": "Prompt abuse and data access cannot be investigated.",
       "recommendation": "Send audit and request logs to a Log Analytics workspace.",
       "user_actionable": true
@@ -606,7 +606,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Machine Learning workspaces should disable public network access",
+      "policy": "Azure Machine Learning workspaces should disable public network access",
       "risk": "Workspace APIs and datastores are exposed to the internet.",
       "recommendation": "Disable public network access and use private endpoints with a managed virtual network.",
       "user_actionable": true
@@ -619,7 +619,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure Machine Learning computes should have local authentication disabled",
+      "policy": "Azure Machine Learning computes should have local authentication disabled",
       "risk": "Local credentials on compute bypass central identity controls.",
       "recommendation": "Disable local authentication on compute and use Microsoft Entra ID.",
       "user_actionable": true
@@ -632,7 +632,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "Management ports should be closed on your virtual machines",
+      "policy": "Management ports should be closed on your virtual machines",
       "risk": "Exposed management ports are brute-forced within minutes of deployment.",
       "recommendation": "Do not expose RDP (3389) or SSH (22) to the internet; use Azure Bastion or just-in-time VM access.",
       "user_actionable": true
@@ -645,7 +645,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-4",
-      "azure_policy": "Virtual machines should enable encryption at host",
+      "policy": "Virtual machines should enable encryption at host",
       "risk": "Temporary disks and caches could hold unencrypted data.",
       "recommendation": "Enable encryption at host so temp disks and caches are encrypted at rest.",
       "user_actionable": true
@@ -658,7 +658,7 @@
       "theme": "Posture",
       "severity": "Medium",
       "benchmark": "MCSB PV-6",
-      "azure_policy": "Machines should be configured to periodically check for missing system updates",
+      "policy": "Machines should be configured to periodically check for missing system updates",
       "risk": "Unpatched operating systems are the most common path to compromise.",
       "recommendation": "Enable Azure Update Manager periodic assessment and automatic guest patching.",
       "user_actionable": true
@@ -671,7 +671,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "Virtual machines should use managed identity",
+      "policy": "Virtual machines should use managed identity",
       "risk": "Credentials stored on disk can be harvested after a compromise.",
       "recommendation": "Assign a managed identity instead of storing credentials on the machine.",
       "user_actionable": true
@@ -684,7 +684,7 @@
       "theme": "Endpoint Security",
       "severity": "Medium",
       "benchmark": "MCSB ES-1",
-      "azure_policy": "Endpoint protection should be installed on your machines",
+      "policy": "Endpoint protection should be installed on your machines",
       "risk": "Malware and intrusions go undetected.",
       "recommendation": "Onboard machines to Microsoft Defender for Servers or an equivalent EDR solution.",
       "user_actionable": true
@@ -697,7 +697,7 @@
       "theme": "Posture",
       "severity": "Medium",
       "benchmark": "MCSB PV-6",
-      "azure_policy": "Virtual machine scale sets should have automatic OS upgrades enabled",
+      "policy": "Virtual machine scale sets should have automatic OS upgrades enabled",
       "risk": "Instances drift out of patch compliance.",
       "recommendation": "Enable automatic OS image upgrades and health probes.",
       "user_actionable": true
@@ -710,7 +710,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "Management ports should be closed on virtual machine scale sets",
+      "policy": "Management ports should be closed on virtual machine scale sets",
       "risk": "Exposed management ports are brute-forced.",
       "recommendation": "Do not expose RDP or SSH on the scale set load balancer; use Azure Bastion.",
       "user_actionable": true
@@ -723,7 +723,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Managed disks should disable public network access",
+      "policy": "Managed disks should disable public network access",
       "risk": "Disk export SAS URLs can be generated and downloaded from anywhere.",
       "recommendation": "Set publicNetworkAccess 'Disabled' and networkAccessPolicy 'DenyAll' or 'AllowPrivate'.",
       "user_actionable": true
@@ -736,7 +736,7 @@
       "theme": "Data Protection",
       "severity": "Low",
       "benchmark": "MCSB DP-4",
-      "azure_policy": "Managed disks should be double encrypted with platform-managed and customer-managed keys",
+      "policy": "Managed disks should be double encrypted with platform-managed and customer-managed keys",
       "risk": "Platform-managed keys may not meet regulatory key-custody requirements.",
       "recommendation": "Use a disk encryption set with customer-managed keys when regulation requires key custody.",
       "user_actionable": true
@@ -749,7 +749,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Batch accounts should disable public network access",
+      "policy": "Azure Batch accounts should disable public network access",
       "risk": "Batch account endpoints are exposed to the internet.",
       "recommendation": "Disable public network access and use private endpoints.",
       "user_actionable": true
@@ -762,7 +762,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure Batch accounts should disable local authentication",
+      "policy": "Azure Batch accounts should disable local authentication",
       "risk": "Shared keys grant full account access.",
       "recommendation": "Allow only Microsoft Entra authentication (allowedAuthenticationModes: ['AAD']).",
       "user_actionable": true
@@ -775,7 +775,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Kubernetes Service private clusters should be enabled",
+      "policy": "Azure Kubernetes Service private clusters should be enabled",
       "risk": "A public API server is exposed to credential and vulnerability attacks.",
       "recommendation": "Use a private cluster, or restrict the API server with authorized IP ranges.",
       "user_actionable": true
@@ -788,7 +788,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure Kubernetes Service clusters should have local authentication methods disabled",
+      "policy": "Azure Kubernetes Service clusters should have local authentication methods disabled",
       "risk": "Static cluster-admin certificates cannot be revoked individually.",
       "recommendation": "Disable local accounts (disableLocalAccounts: true) and enable Microsoft Entra integration with Azure RBAC.",
       "user_actionable": true
@@ -801,7 +801,7 @@
       "theme": "Posture",
       "severity": "Medium",
       "benchmark": "MCSB PV-2",
-      "azure_policy": "Azure Policy Add-on for Kubernetes service should be installed and enabled",
+      "policy": "Azure Policy Add-on for Kubernetes service should be installed and enabled",
       "risk": "Privileged or misconfigured pods can compromise the node.",
       "recommendation": "Enable the Azure Policy add-on and apply the pod security baseline.",
       "user_actionable": true
@@ -814,7 +814,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "Kubernetes clusters should use network policies",
+      "policy": "Kubernetes clusters should use network policies",
       "risk": "Flat pod networking allows lateral movement after a pod compromise.",
       "recommendation": "Enable a network policy engine (Azure, Calico or Cilium) and default-deny namespace traffic.",
       "user_actionable": true
@@ -827,7 +827,7 @@
       "theme": "Posture",
       "severity": "Medium",
       "benchmark": "MCSB PV-6",
-      "azure_policy": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
+      "policy": "Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
       "risk": "Clusters on unsupported versions miss security fixes.",
       "recommendation": "Enable an automatic upgrade channel ('patch' or 'stable') and node OS auto-upgrade.",
       "user_actionable": true
@@ -840,7 +840,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Container registries should not allow unrestricted network access",
+      "policy": "Container registries should not allow unrestricted network access",
       "risk": "Images and pull tokens are exposed to the internet.",
       "recommendation": "Disable public network access on Premium registries and use private endpoints.",
       "user_actionable": true
@@ -853,7 +853,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Container registries should have the admin user disabled",
+      "policy": "Container registries should have the admin user disabled",
       "risk": "The admin user is a shared credential with push and pull rights.",
       "recommendation": "Set adminUserEnabled: false and pull with managed identity (AcrPull role).",
       "user_actionable": true
@@ -866,7 +866,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Container registries should have anonymous authentication disabled",
+      "policy": "Container registries should have anonymous authentication disabled",
       "risk": "Anyone can pull proprietary images.",
       "recommendation": "Keep anonymous pull disabled (anonymousPullEnabled: false).",
       "user_actionable": true
@@ -879,7 +879,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "Network security groups should not allow inbound management traffic from the internet",
+      "policy": "Network security groups should not allow inbound management traffic from the internet",
       "risk": "Open management ports are brute-forced continuously.",
       "recommendation": "Deny inbound RDP (3389) and SSH (22) from 'Internet' or '*' sources.",
       "user_actionable": true
@@ -892,7 +892,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "All network ports should be restricted on network security groups",
+      "policy": "All network ports should be restricted on network security groups",
       "risk": "Overly permissive rules expose services that were meant to be internal.",
       "recommendation": "Avoid 'Any' source rules; scope inbound rules to specific ports and source prefixes.",
       "user_actionable": true
@@ -905,7 +905,7 @@
       "theme": "Logging",
       "severity": "Low",
       "benchmark": "MCSB LT-4",
-      "azure_policy": "Flow logs should be configured for every virtual network",
+      "policy": "Flow logs should be configured for every virtual network",
       "risk": "Network-level investigations lack evidence.",
       "recommendation": "Enable virtual network flow logs with traffic analytics.",
       "user_actionable": true
@@ -918,7 +918,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "Subnets should be associated with a network security group",
+      "policy": "Subnets should be associated with a network security group",
       "risk": "Subnets without an NSG allow unfiltered lateral traffic.",
       "recommendation": "Associate a network security group with every workload subnet.",
       "user_actionable": true
@@ -931,7 +931,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-5",
-      "azure_policy": "Azure DDoS Protection should be enabled",
+      "policy": "Azure DDoS Protection should be enabled",
       "risk": "Volumetric attacks can take public endpoints offline.",
       "recommendation": "Enable DDoS Network Protection for virtual networks that host internet-facing workloads.",
       "user_actionable": true
@@ -944,7 +944,7 @@
       "theme": "Network Security",
       "severity": "Low",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Subnets should be private",
+      "policy": "Subnets should be private",
       "risk": "Implicit outbound IPs make egress hard to control and audit.",
       "recommendation": "Disable default outbound access (defaultOutboundAccess: false) and use NAT Gateway or a firewall for egress.",
       "user_actionable": true
@@ -957,7 +957,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-1",
-      "azure_policy": "Network interfaces should not have public IPs",
+      "policy": "Network interfaces should not have public IPs",
       "risk": "Directly exposed VMs bypass centralized perimeter controls.",
       "recommendation": "Do not attach public IP addresses directly to NICs; publish through a load balancer, gateway or Bastion.",
       "user_actionable": true
@@ -970,7 +970,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-5",
-      "azure_policy": "Public IP addresses should have resource logs enabled for Azure DDoS Protection",
+      "policy": "Public IP addresses should have resource logs enabled for Azure DDoS Protection",
       "risk": "Basic SKU public IPs are retired and lack DDoS telemetry.",
       "recommendation": "Use Standard SKU public IPs, zone-redundant where available, protected by DDoS Network Protection.",
       "user_actionable": true
@@ -983,7 +983,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-6",
-      "azure_policy": "Web Application Firewall (WAF) should be enabled for Application Gateway",
+      "policy": "Web Application Firewall (WAF) should be enabled for Application Gateway",
       "risk": "Web apps are exposed to OWASP Top 10 attacks.",
       "recommendation": "Use the WAF_v2 SKU with a WAF policy in Prevention mode.",
       "user_actionable": true
@@ -996,7 +996,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Application Gateway should use a TLS policy that requires TLS 1.2",
+      "policy": "Application Gateway should use a TLS policy that requires TLS 1.2",
       "risk": "Weak ciphers allow downgrade and decryption attacks.",
       "recommendation": "Use a predefined TLS policy of AppGwSslPolicy20220101 or newer.",
       "user_actionable": true
@@ -1009,7 +1009,7 @@
       "theme": "Posture",
       "severity": "Low",
       "benchmark": "MCSB PV-2",
-      "azure_policy": "Load balancers should use the Standard SKU",
+      "policy": "Load balancers should use the Standard SKU",
       "risk": "Basic SKU is retired and lacks secure-by-default behaviour.",
       "recommendation": "Use the Standard SKU; Basic load balancers are retired.",
       "user_actionable": true
@@ -1022,7 +1022,7 @@
       "theme": "Posture",
       "severity": "Low",
       "benchmark": "MCSB PV-2",
-      "azure_policy": "DNS zones should be protected against deletion",
+      "policy": "DNS zones should be protected against deletion",
       "risk": "Accidental deletion causes outages and enables subdomain takeover.",
       "recommendation": "Apply a CanNotDelete resource lock to production DNS zones.",
       "user_actionable": true
@@ -1035,7 +1035,7 @@
       "theme": "Network Security",
       "severity": "High",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "API Management services should use a virtual network",
+      "policy": "API Management services should use a virtual network",
       "risk": "Backend APIs are exposed without a perimeter.",
       "recommendation": "Deploy in internal VNet mode or disable public network access, publishing through Application Gateway with WAF.",
       "user_actionable": true
@@ -1048,7 +1048,7 @@
       "theme": "Data Protection",
       "severity": "Medium",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "API Management should disable insecure protocols and ciphers",
+      "policy": "API Management should disable insecure protocols and ciphers",
       "risk": "Legacy protocols allow interception.",
       "recommendation": "Disable TLS 1.0/1.1, SSL 3.0 and 3DES in customProperties.",
       "user_actionable": true
@@ -1061,7 +1061,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "API Management secret named values should be stored in Azure Key Vault",
+      "policy": "API Management secret named values should be stored in Azure Key Vault",
       "risk": "Secrets stored inline in APIM are hard to rotate and audit.",
       "recommendation": "Use Key Vault-backed named values accessed through managed identity.",
       "user_actionable": true
@@ -1074,7 +1074,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Azure Service Bus namespaces should have local authentication methods disabled",
+      "policy": "Azure Service Bus namespaces should have local authentication methods disabled",
       "risk": "SAS keys are shared secrets with broad rights.",
       "recommendation": "Set disableLocalAuth: true and use Entra ID RBAC (Azure Service Bus Data Sender/Receiver).",
       "user_actionable": true
@@ -1087,7 +1087,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Service Bus namespaces should disable public network access",
+      "policy": "Service Bus namespaces should disable public network access",
       "risk": "Messaging endpoints are exposed to the internet.",
       "recommendation": "Disable public network access on Premium namespaces and use private endpoints.",
       "user_actionable": true
@@ -1100,7 +1100,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Data Factory should disable public network access",
+      "policy": "Azure Data Factory should disable public network access",
       "risk": "Pipelines and linked services are reachable from the internet.",
       "recommendation": "Disable public network access and use a managed virtual network with managed private endpoints.",
       "user_actionable": true
@@ -1113,7 +1113,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "Azure Data Factory linked services should use Key Vault for storing secrets",
+      "policy": "Azure Data Factory linked services should use Key Vault for storing secrets",
       "risk": "Inline secrets in linked services leak through exports.",
       "recommendation": "Reference credentials from Key Vault or use managed identity authentication.",
       "user_actionable": true
@@ -1126,7 +1126,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Databricks workspaces should disable public network access",
+      "policy": "Azure Databricks workspaces should disable public network access",
       "risk": "Workspace and cluster endpoints are exposed publicly.",
       "recommendation": "Use VNet injection with secure cluster connectivity (no public IP) and private link.",
       "user_actionable": true
@@ -1139,7 +1139,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "Logic Apps should use managed identity for connections",
+      "policy": "Logic Apps should use managed identity for connections",
       "risk": "Connection secrets and run history can expose credentials.",
       "recommendation": "Authenticate connectors and HTTP actions with managed identity; secure trigger inputs and outputs.",
       "user_actionable": true
@@ -1152,7 +1152,7 @@
       "theme": "Data Protection",
       "severity": "High",
       "benchmark": "MCSB DP-3",
-      "azure_policy": "Azure Cache for Redis should only allow secure connections",
+      "policy": "Azure Cache for Redis should only allow secure connections",
       "risk": "Cache data and access keys travel unencrypted.",
       "recommendation": "Disable the non-SSL port (enableNonSslPort: false) and require TLS 1.2.",
       "user_actionable": true
@@ -1165,7 +1165,7 @@
       "theme": "Network Security",
       "severity": "Medium",
       "benchmark": "MCSB NS-2",
-      "azure_policy": "Azure Cache for Redis should disable public network access",
+      "policy": "Azure Cache for Redis should disable public network access",
       "risk": "Cache endpoints are exposed to the internet.",
       "recommendation": "Disable public network access and use a private endpoint.",
       "user_actionable": true
@@ -1178,7 +1178,7 @@
       "theme": "Identity",
       "severity": "Medium",
       "benchmark": "MCSB IM-3",
-      "azure_policy": "Automation accounts should use managed identity",
+      "policy": "Automation accounts should use managed identity",
       "risk": "Certificates and variables can leak credentials.",
       "recommendation": "Use a managed identity instead of Run As accounts; encrypt variables.",
       "user_actionable": true
@@ -1191,7 +1191,7 @@
       "theme": "Identity",
       "severity": "Low",
       "benchmark": "MCSB IM-1",
-      "azure_policy": "Application Insights components should block non-Entra ID based ingestion",
+      "policy": "Application Insights components should block non-Entra ID based ingestion",
       "risk": "Anyone with the connection string can inject fake telemetry.",
       "recommendation": "Disable local authentication (DisableLocalAuth: true) so telemetry ingestion requires Entra ID.",
       "user_actionable": true
@@ -1204,7 +1204,7 @@
       "theme": "Logging",
       "severity": "Low",
       "benchmark": "MCSB LT-5",
-      "azure_policy": "Application Insights components should be workspace-based",
+      "policy": "Application Insights components should be workspace-based",
       "risk": "Classic components are retired and cannot be governed centrally.",
       "recommendation": "Link the component to a Log Analytics workspace (WorkspaceResourceId).",
       "user_actionable": true
@@ -1217,7 +1217,7 @@
       "theme": "Logging",
       "severity": "Medium",
       "benchmark": "MCSB LT-4",
-      "azure_policy": "Activity log should be retained for at least one year",
+      "policy": "Activity log should be retained for at least one year",
       "risk": "Control-plane changes cannot be investigated after the default 90 days.",
       "recommendation": "Export the subscription activity log to a Log Analytics workspace with adequate retention.",
       "user_actionable": true
@@ -1230,7 +1230,7 @@
       "theme": "Identity",
       "severity": "Critical",
       "benchmark": "MCSB IM-6",
-      "azure_policy": "Accounts with owner permissions on Azure resources should be MFA enabled",
+      "policy": "Accounts with owner permissions on Azure resources should be MFA enabled",
       "risk": "Password-only accounts are easily phished or sprayed.",
       "recommendation": "Require multi-factor authentication for all users through Conditional Access.",
       "user_actionable": true
@@ -1243,7 +1243,7 @@
       "theme": "Identity",
       "severity": "High",
       "benchmark": "MCSB IM-7",
-      "azure_policy": "Conditional Access should block legacy authentication",
+      "policy": "Conditional Access should block legacy authentication",
       "risk": "Legacy protocols cannot enforce MFA.",
       "recommendation": "Block legacy authentication protocols tenant-wide.",
       "user_actionable": true
@@ -1256,7 +1256,7 @@
       "theme": "Privileged Access",
       "severity": "High",
       "benchmark": "MCSB PA-2",
-      "azure_policy": "Privileged roles should use just-in-time access",
+      "policy": "Privileged roles should use just-in-time access",
       "risk": "Standing privileged access increases the impact of a compromised account.",
       "recommendation": "Use Privileged Identity Management for eligible, time-bound role activation.",
       "user_actionable": true
@@ -1269,7 +1269,7 @@
       "theme": "Privileged Access",
       "severity": "High",
       "benchmark": "MCSB PA-1",
-      "azure_policy": "A maximum of 3 owners should be designated for your subscription",
+      "policy": "A maximum of 3 owners should be designated for your subscription",
       "risk": "Too many owners widens the privileged attack surface.",
       "recommendation": "Keep subscription owners to a small, reviewed group (between 2 and 3).",
       "user_actionable": true
@@ -1282,7 +1282,7 @@
       "theme": "Privileged Access",
       "severity": "Medium",
       "benchmark": "MCSB PA-7",
-      "azure_policy": "Guest accounts with owner permissions on Azure resources should be removed",
+      "policy": "Guest accounts with owner permissions on Azure resources should be removed",
       "risk": "External identities are outside your lifecycle and MFA controls.",
       "recommendation": "Remove guest and external accounts from privileged roles and review access regularly.",
       "user_actionable": true
@@ -1295,7 +1295,7 @@
       "theme": "Privileged Access",
       "severity": "Medium",
       "benchmark": "MCSB PA-7",
-      "azure_policy": "Custom subscription owner roles should not exist",
+      "policy": "Custom subscription owner roles should not exist",
       "risk": "Custom wildcard roles silently grant owner-equivalent rights.",
       "recommendation": "Prefer built-in least-privilege roles; avoid wildcard custom roles.",
       "user_actionable": true
@@ -1308,7 +1308,7 @@
       "theme": "Logging",
       "severity": "Medium",
       "benchmark": "MCSB LT-1",
-      "azure_policy": "Subscriptions should have a contact email address for security issues",
+      "policy": "Subscriptions should have a contact email address for security issues",
       "risk": "Security alerts go unnoticed.",
       "recommendation": "Configure security contact details and alert notifications in Defender for Cloud.",
       "user_actionable": true
@@ -1321,7 +1321,7 @@
       "theme": "Governance",
       "severity": "Medium",
       "benchmark": "MCSB AM-2",
-      "azure_policy": "Require a tag on resources",
+      "policy": "Require a tag on resources",
       "risk": "Untagged resources cannot be attributed, costed or cleaned up.",
       "recommendation": "Enforce tags such as environment, owner and cost-center with Azure Policy.",
       "user_actionable": true
@@ -1334,7 +1334,7 @@
       "theme": "Governance",
       "severity": "Medium",
       "benchmark": "MCSB AM-2",
-      "azure_policy": "Allowed locations",
+      "policy": "Allowed locations",
       "risk": "Data residency obligations can be breached.",
       "recommendation": "Restrict deployments to approved regions with Azure Policy.",
       "user_actionable": true
@@ -1347,7 +1347,7 @@
       "theme": "Posture",
       "severity": "High",
       "benchmark": "MCSB LT-1",
-      "azure_policy": "Microsoft Defender for Cloud plans should be enabled",
+      "policy": "Microsoft Defender for Cloud plans should be enabled",
       "risk": "Threats and misconfigurations are not detected.",
       "recommendation": "Enable Defender CSPM and the workload plans (Servers, Storage, Key Vault, Databases, Containers) that match your estate.",
       "user_actionable": true
@@ -1360,7 +1360,7 @@
       "theme": "Posture",
       "severity": "Medium",
       "benchmark": "MCSB PV-1",
-      "azure_policy": "Microsoft cloud security benchmark initiative should be assigned",
+      "policy": "Microsoft cloud security benchmark initiative should be assigned",
       "risk": "Continuous compliance drift goes unmeasured.",
       "recommendation": "Assign the Microsoft cloud security benchmark policy initiative at management group scope.",
       "user_actionable": true
@@ -1373,9 +1373,414 @@
       "theme": "Governance",
       "severity": "Low",
       "benchmark": "MCSB AM-1",
-      "azure_policy": "Resource providers should be registered deliberately",
+      "policy": "Resource providers should be registered deliberately",
       "risk": "Unreviewed preview features may not meet security and support requirements.",
       "recommendation": "Register only the resource providers you need and review preview features before enabling them.",
+      "user_actionable": true
+    }
+  ],
+  "AWS": [
+    {
+      "csp": "AWS",
+      "service": "Amazon S3",
+      "control_id": "LFT-AWS-S3-01",
+      "layer": "Resource",
+      "theme": "Public Access",
+      "severity": "Critical",
+      "benchmark": "AWS FSBP S3.8",
+      "policy": "s3-bucket-level-public-access-prohibited",
+      "risk": "A bucket reachable by anonymous users leaks data and is the most common cause of cloud data breaches.",
+      "recommendation": "Block public access on every bucket: BlockPublicAcls, BlockPublicPolicy, IgnorePublicAcls and RestrictPublicBuckets all true.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon S3",
+      "control_id": "LFT-AWS-S3-02",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "High",
+      "benchmark": "AWS FSBP S3.17",
+      "policy": "s3-default-encryption-kms",
+      "risk": "Unencrypted objects are exposed if storage media or backups are compromised.",
+      "recommendation": "Encrypt objects at rest with default bucket encryption (SSE-KMS, or SSE-S3 at minimum).",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon S3",
+      "control_id": "LFT-AWS-S3-03",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP S3.5",
+      "policy": "s3-bucket-ssl-requests-only",
+      "risk": "Plain HTTP requests expose object data and credentials in transit.",
+      "recommendation": "Require TLS: add a bucket policy that denies requests where aws:SecureTransport is false (SSL-only).",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon S3",
+      "control_id": "LFT-AWS-S3-04",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Low",
+      "benchmark": "AWS FSBP S3.14",
+      "policy": "s3-bucket-versioning-enabled",
+      "risk": "Accidental or malicious deletion becomes unrecoverable.",
+      "recommendation": "Enable versioning so overwritten or deleted objects can be recovered.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon S3",
+      "control_id": "LFT-AWS-S3-05",
+      "layer": "Resource",
+      "theme": "Logging",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP S3.9",
+      "policy": "s3-bucket-logging-enabled",
+      "risk": "Access to sensitive objects cannot be investigated after an incident.",
+      "recommendation": "Enable server access logging to a separate logging bucket.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon RDS",
+      "control_id": "LFT-AWS-RDS-01",
+      "layer": "Resource",
+      "theme": "Public Access",
+      "severity": "Critical",
+      "benchmark": "AWS FSBP RDS.2",
+      "policy": "rds-instance-public-access-check",
+      "risk": "Internet-reachable databases are targeted by credential attacks within minutes.",
+      "recommendation": "Keep database instances private: PubliclyAccessible false, reachable only from inside the VPC.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon RDS",
+      "control_id": "LFT-AWS-RDS-02",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "High",
+      "benchmark": "AWS FSBP RDS.3",
+      "policy": "rds-storage-encrypted",
+      "risk": "Snapshots and storage of unencrypted databases can be read if copied or leaked.",
+      "recommendation": "Encrypt storage at rest (StorageEncrypted true) with a KMS key.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon RDS",
+      "control_id": "LFT-AWS-RDS-03",
+      "layer": "Resource",
+      "theme": "Resilience",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP RDS.5",
+      "policy": "rds-multi-az-support",
+      "risk": "A single Availability Zone failure takes the database offline.",
+      "recommendation": "Deploy production instances Multi-AZ.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon RDS",
+      "control_id": "LFT-AWS-RDS-04",
+      "layer": "Resource",
+      "theme": "Resilience",
+      "severity": "Low",
+      "benchmark": "AWS FSBP RDS.8",
+      "policy": "rds-instance-deletion-protection-enabled",
+      "risk": "A mistaken stack update or console action can delete the database.",
+      "recommendation": "Enable deletion protection on production instances.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon EC2",
+      "control_id": "LFT-AWS-EC2-01",
+      "layer": "Resource",
+      "theme": "Identity",
+      "severity": "High",
+      "benchmark": "AWS FSBP EC2.8",
+      "policy": "ec2-imdsv2-check",
+      "risk": "IMDSv1 lets server-side request forgery steal the instance role's credentials.",
+      "recommendation": "Require IMDSv2 for the instance metadata service (HttpTokens required).",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon EC2",
+      "control_id": "LFT-AWS-EC2-02",
+      "layer": "Resource",
+      "theme": "Network Security",
+      "severity": "High",
+      "benchmark": "AWS FSBP EC2.9",
+      "policy": "ec2-instance-no-public-ip",
+      "risk": "Instances with public IPs are directly exposed to internet scanning.",
+      "recommendation": "Do not assign a public IP to instances; reach them through a load balancer or Session Manager.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon EC2",
+      "control_id": "LFT-AWS-EC2-03",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP EC2.3",
+      "policy": "encrypted-volumes",
+      "risk": "Volume snapshots can expose data if shared or copied.",
+      "recommendation": "Encrypt attached EBS volumes at rest.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon VPC",
+      "control_id": "LFT-AWS-VPC-01",
+      "layer": "Resource",
+      "theme": "Network Security",
+      "severity": "High",
+      "benchmark": "AWS FSBP EC2.2",
+      "policy": "vpc-default-security-group-closed",
+      "risk": "Resources placed in the default group accidentally become reachable.",
+      "recommendation": "Restrict the default security group so it allows no inbound or outbound traffic.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon VPC",
+      "control_id": "LFT-AWS-VPC-02",
+      "layer": "Resource",
+      "theme": "Logging",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP EC2.6",
+      "policy": "vpc-flow-logs-enabled",
+      "risk": "Network-level investigations lack evidence.",
+      "recommendation": "Enable VPC flow logs.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Lambda",
+      "control_id": "LFT-AWS-LAMBDA-01",
+      "layer": "Resource",
+      "theme": "Public Access",
+      "severity": "Critical",
+      "benchmark": "AWS FSBP Lambda.1",
+      "policy": "lambda-function-public-access-prohibited",
+      "risk": "Anyone could invoke the function and run up cost or reach downstream data.",
+      "recommendation": "Do not allow public invocation in the function's resource-based policy.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Lambda",
+      "control_id": "LFT-AWS-LAMBDA-02",
+      "layer": "Resource",
+      "theme": "Posture",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP Lambda.2",
+      "policy": "lambda-function-settings-check",
+      "risk": "Deprecated runtimes stop receiving security patches.",
+      "recommendation": "Use a supported runtime and keep it up to date.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon DynamoDB",
+      "control_id": "LFT-AWS-DDB-01",
+      "layer": "Resource",
+      "theme": "Resilience",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP DynamoDB.2",
+      "policy": "dynamodb-pitr-enabled",
+      "risk": "Corrupted or deleted items cannot be restored.",
+      "recommendation": "Enable point-in-time recovery on tables.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon SQS",
+      "control_id": "LFT-AWS-SQS-01",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP SQS.1",
+      "policy": "",
+      "risk": "Message payloads are stored unencrypted.",
+      "recommendation": "Encrypt queues at rest (SqsManagedSseEnabled or a KMS key).",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon SNS",
+      "control_id": "LFT-AWS-SNS-01",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP SNS.1",
+      "policy": "sns-encrypted-kms",
+      "risk": "Published messages are stored unencrypted.",
+      "recommendation": "Encrypt topics at rest with a KMS key.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS KMS",
+      "control_id": "LFT-AWS-KMS-01",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP KMS.4",
+      "policy": "cmk-backing-key-rotation-enabled",
+      "risk": "Long-lived key material increases the impact of a key compromise.",
+      "recommendation": "Enable automatic key rotation for customer managed keys.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Secrets Manager",
+      "control_id": "LFT-AWS-SM-01",
+      "layer": "Resource",
+      "theme": "Identity",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP SecretsManager.1",
+      "policy": "secretsmanager-rotation-enabled-check",
+      "risk": "Static credentials remain valid long after they leak.",
+      "recommendation": "Enable automatic rotation for secrets.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon EKS",
+      "control_id": "LFT-AWS-EKS-01",
+      "layer": "Resource",
+      "theme": "Network Security",
+      "severity": "High",
+      "benchmark": "AWS FSBP EKS.1",
+      "policy": "eks-endpoint-no-public-access",
+      "risk": "A public Kubernetes API endpoint is exposed to credential and vulnerability attacks.",
+      "recommendation": "Make the cluster API endpoint private (EndpointPublicAccess false).",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon EKS",
+      "control_id": "LFT-AWS-EKS-02",
+      "layer": "Resource",
+      "theme": "Posture",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP EKS.2",
+      "policy": "eks-cluster-supported-version",
+      "risk": "Unsupported versions miss security fixes.",
+      "recommendation": "Run a supported Kubernetes version and upgrade before end of support.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon ECR",
+      "control_id": "LFT-AWS-ECR-01",
+      "layer": "Resource",
+      "theme": "Posture",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP ECR.1",
+      "policy": "ecr-private-image-scanning-enabled",
+      "risk": "Vulnerable images reach production unnoticed.",
+      "recommendation": "Enable image scanning on push for private repositories.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Elastic Load Balancing",
+      "control_id": "LFT-AWS-ELB-01",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP ELB.1",
+      "policy": "alb-http-to-https-redirection-check",
+      "risk": "Clients can send data over unencrypted HTTP.",
+      "recommendation": "Redirect all HTTP listener traffic to HTTPS on Application Load Balancers.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon CloudFront",
+      "control_id": "LFT-AWS-CF-01",
+      "layer": "Resource",
+      "theme": "Data Protection",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP CloudFront.3",
+      "policy": "cloudfront-viewer-policy-https",
+      "risk": "Content and cookies travel over plain HTTP.",
+      "recommendation": "Require HTTPS between viewers and CloudFront (redirect-to-https or https-only).",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "Amazon API Gateway",
+      "control_id": "LFT-AWS-APIGW-01",
+      "layer": "Resource",
+      "theme": "Logging",
+      "severity": "Medium",
+      "benchmark": "AWS FSBP APIGateway.1",
+      "policy": "api-gw-execution-logging-enabled",
+      "risk": "API abuse cannot be investigated.",
+      "recommendation": "Enable execution logging for REST and WebSocket API stages.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Account",
+      "control_id": "LFT-AWS-ACCT-01",
+      "layer": "Platform",
+      "theme": "Identity",
+      "severity": "Critical",
+      "benchmark": "AWS FSBP IAM.4",
+      "policy": "iam-root-access-key-check",
+      "risk": "Root access keys give unrestricted, hard-to-audit access to the whole account.",
+      "recommendation": "Do not create access keys for the root user.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Account",
+      "control_id": "LFT-AWS-ACCT-02",
+      "layer": "Platform",
+      "theme": "Identity",
+      "severity": "Critical",
+      "benchmark": "AWS FSBP IAM.6",
+      "policy": "root-account-hardware-mfa-enabled",
+      "risk": "A phished root password means full account takeover.",
+      "recommendation": "Protect the root user with hardware MFA.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Account",
+      "control_id": "LFT-AWS-ACCT-03",
+      "layer": "Platform",
+      "theme": "Logging",
+      "severity": "High",
+      "benchmark": "AWS FSBP CloudTrail.1",
+      "policy": "multi-region-cloudtrail-enabled",
+      "risk": "Control-plane changes cannot be investigated.",
+      "recommendation": "Enable a multi-Region CloudTrail trail that records management events.",
+      "user_actionable": true
+    },
+    {
+      "csp": "AWS",
+      "service": "AWS Account",
+      "control_id": "LFT-AWS-ACCT-04",
+      "layer": "Platform",
+      "theme": "Posture",
+      "severity": "High",
+      "benchmark": "AWS FSBP GuardDuty.1",
+      "policy": "guardduty-enabled-centralized",
+      "risk": "Threats such as credential exfiltration and crypto-mining go undetected.",
+      "recommendation": "Enable Amazon GuardDuty in every Region you use.",
       "user_actionable": true
     }
   ]

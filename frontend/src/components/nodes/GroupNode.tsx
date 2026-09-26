@@ -15,6 +15,10 @@ const groupIcons: Record<GroupNodeType, string> = {
   region: 'mdi:earth',
   subscription: 'mdi:card-account-details-outline',
   availabilityZone: 'mdi:shield-check-outline',
+  awsAccount: 'mdi:cloud-outline',
+  awsRegion: 'mdi:map-marker-outline',
+  awsVpc: 'mdi:network-outline',
+  awsSubnet: 'mdi:lan-connect',
 };
 
 function GroupNodeComponent({ data, selected, id }: NodeProps) {

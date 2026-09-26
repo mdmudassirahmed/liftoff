@@ -1,6 +1,6 @@
 // IaC Generation Types
 
-export type IaCFormat = 'bicep' | 'arm' | 'terraform';
+export type IaCFormat = 'bicep' | 'arm' | 'terraform' | 'cloudformation';
 export type TargetScope = 'resourceGroup' | 'subscription' | 'managementGroup' | 'tenant';
 
 export interface GenerateIaCRequest {
@@ -9,6 +9,7 @@ export interface GenerateIaCRequest {
     edges: DiagramEdgePayload[];
   };
   options: IaCGenerationOptions;
+  csp?: string;
 }
 
 export interface DiagramNodePayload {
@@ -129,7 +130,8 @@ export interface ComplianceGuardrail {
   recommendation: string;
   risk?: string;
   benchmark?: string;
-  azure_policy?: string;
+  /** Built-in Azure Policy (Azure) or AWS Config managed rule (AWS) that audits the control. */
+  policy?: string;
   category?: GuardrailCategory;
 }
 

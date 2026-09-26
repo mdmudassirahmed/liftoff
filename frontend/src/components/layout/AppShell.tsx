@@ -15,6 +15,7 @@ import { ChatContainer } from '@/components/Chat';
 import { useDiagramStore } from '@/store/diagramStore';
 import { useTabsStore } from '@/store/tabsStore';
 import { getExample } from '@/lib/examples';
+import { useCspStore } from '@/store/cspStore';
 import agentsService from '@/services/agentsService';
 import { api } from '@/services/api';
 
@@ -45,12 +46,12 @@ function getIconForResourceType(resourceType: string): string {
     'Microsoft.DBforPostgreSQL/flexibleServers': 'azure:postgresql',
     'Microsoft.DBforMySQL/flexibleServers': 'azure:mysql',
   };
-  
+
   // Try exact match
   if (resourceTypeIcons[resourceType]) {
     return resourceTypeIcons[resourceType];
   }
-  
+
   // Try partial match based on provider
   const provider = resourceType.split('/')[0];
   if (provider === 'Microsoft.Web') return 'azure:app-service';
@@ -58,9 +59,48 @@ function getIconForResourceType(resourceType: string): string {
   if (provider === 'Microsoft.Storage') return 'azure:storage-account';
   if (provider === 'Microsoft.Network') return 'azure:virtual-network';
   if (provider === 'Microsoft.Sql') return 'azure:sql-database';
-  
+
   // Default fallback
   return 'azure:resource';
+}
+
+// Map AWS CloudFormation resource type to MDI icon path (matches awsServices.json catalog exactly)
+function getAwsIconForResourceType(resourceType: string): string {
+  const awsTypeIcons: Record<string, string> = {
+    'AWS::Lambda::Function': 'mdi:function',
+    'AWS::EC2::Instance': 'mdi:server',
+    'AWS::AutoScaling::AutoScalingGroup': 'mdi:auto-fix',
+    'AWS::ECS::Cluster': 'mdi:docker',
+    'AWS::ECS::TaskDefinition': 'mdi:clipboard-list',
+    'AWS::EKS::Cluster': 'mdi:kubernetes',
+    'AWS::S3::Bucket': 'mdi:bucket',
+    'AWS::EFS::FileSystem': 'mdi:folder-network',
+    'AWS::RDS::DBInstance': 'mdi:database',
+    'AWS::RDS::DBCluster': 'mdi:database-check',
+    'AWS::DynamoDB::Table': 'mdi:table',
+    'AWS::DynamoDB::GlobalTable': 'mdi:table-sync',
+    'AWS::ElastiCache::CacheCluster': 'mdi:memory',
+    'AWS::Redshift::Cluster': 'mdi:warehouse',
+    'AWS::Bedrock::Agent': 'mdi:brain',
+    'AWS::SageMaker::NotebookInstance': 'mdi:robot',
+    'AWS::IAM::Role': 'mdi:account-key',
+    'AWS::SecretsManager::Secret': 'mdi:safe',
+    'AWS::KMS::Key': 'mdi:key',
+    'AWS::SQS::Queue': 'mdi:tray-full',
+    'AWS::SNS::Topic': 'mdi:bell-ring',
+    'AWS::Events::Rule': 'mdi:calendar-clock',
+    'AWS::StepFunctions::StateMachine': 'mdi:state-machine',
+    'AWS::ApiGateway::RestApi': 'mdi:api',
+    'AWS::ApiGatewayV2::Api': 'mdi:web',
+    'AWS::Glue::Job': 'mdi:puzzle',
+    'AWS::Kinesis::Stream': 'mdi:waves',
+    'AWS::Athena::WorkGroup': 'mdi:magnify',
+    'AWS::Logs::LogGroup': 'mdi:chart-line',
+    'AWS::ElasticLoadBalancingV2::LoadBalancer': 'mdi:scale-balance',
+    'AWS::CloudFront::Distribution': 'mdi:cloud-outline',
+    'AWS::Cognito::UserPool': 'mdi:account-check',
+  };
+  return awsTypeIcons[resourceType] || 'mdi:aws';
 }
 
 export function AppShell() {
@@ -92,6 +132,7 @@ export function AppShell() {
   const setCurrentTabId = useDiagramStore((state) => state.setCurrentTabId);
   const nodes = useDiagramStore((state) => state.nodes);
   const edges = useDiagramStore((state) => state.edges);
+  const { activeCsp } = useCspStore();
   
   const tabs = useTabsStore((state) => state.tabs);
   const activeTabId = useTabsStore((state) => state.activeTabId);
@@ -268,7 +309,7 @@ export function AppShell() {
     previousTabIdRef.current = newTabId;
     setCurrentTabId(newTabId);
     
-    // Color mapping for group types
+    // Color mapping for group types (Azure + AWS)
     const groupColors: Record<string, string> = {
       resourceGroup: '#0078D4',
       virtualNetwork: '#3B82F6',
@@ -276,8 +317,12 @@ export function AppShell() {
       region: '#10B981',
       subscription: '#F59E0B',
       availabilityZone: '#8B5CF6',
+      awsAccount: '#232F3E',
+      awsRegion: '#FF9900',
+      awsVpc: '#8C4FFF',
+      awsSubnet: '#00A1C9',
     };
-    
+
     // Default sizes for group types (nested groups need proper sizing)
     const groupSizes: Record<string, { width: number; height: number }> = {
       region: { width: 900, height: 700 },
@@ -286,6 +331,10 @@ export function AppShell() {
       virtualNetwork: { width: 600, height: 400 },
       subnet: { width: 500, height: 300 },
       availabilityZone: { width: 500, height: 300 },
+      awsAccount: { width: 1200, height: 900 },
+      awsRegion: { width: 1000, height: 720 },
+      awsVpc: { width: 700, height: 450 },
+      awsSubnet: { width: 450, height: 280 },
     };
     
     // Import node interface
@@ -334,30 +383,29 @@ export function AppShell() {
 
     // Transform nodes with proper data structure
     const normalizedNodes = sortedNodes.map(node => {
-      const isGroup = node.type === 'azure.group' || node.type === 'group';
-      const isService = node.type === 'azure.service' || node.type === 'service';
+      const isGroup = node.type === 'azure.group' || node.type === 'group' || node.type === 'aws.group';
+      const isService = node.type === 'azure.service' || node.type === 'service' || node.type === 'aws.service';
+      const isAwsType = node.type === 'aws.group' || node.type === 'aws.service' || (node.data as Record<string, unknown>).csp === 'aws';
       const groupType = node.data.groupType as string || 'resourceGroup';
-      
-      // Calculate position - for nested nodes, positions are relative to parent
-      // We'll spread them out more for better visibility
+
+      // For AWS nodes: trust the AI-generated positions (the schema specifies proper spacing).
+      // For Azure nodes: apply the existing override to keep backwards-compat.
       let adjustedPosition = { ...node.position };
-      
-      // For groups, use proper sizing and offset positions for nesting
       const nestingLevel = getNestingLevel(node.id);
-      if (isGroup) {
-        // Offset nested groups so they don't overlap at same corner
-        adjustedPosition = {
-          x: 40 + (nestingLevel * 50),
-          y: 60 + (nestingLevel * 50),
-        };
-      } else if (isService) {
-        // Services within groups - spread them out
-        adjustedPosition = {
-          x: Math.max(40, node.position.x),
-          y: Math.max(80, node.position.y),
-        };
+      if (!isAwsType) {
+        if (isGroup) {
+          adjustedPosition = {
+            x: 40 + (nestingLevel * 50),
+            y: 60 + (nestingLevel * 50),
+          };
+        } else if (isService) {
+          adjustedPosition = {
+            x: Math.max(40, node.position.x),
+            y: Math.max(80, node.position.y),
+          };
+        }
       }
-      
+
       if (isGroup) {
         const size = groupSizes[groupType] || { width: 500, height: 350 };
         return {
@@ -376,6 +424,7 @@ export function AppShell() {
             color: groupColors[groupType] || '#0078D4',
             regionName: node.data.region as string || undefined,
             metadata: node.data.properties as Record<string, unknown> || undefined,
+            csp: isAwsType ? 'aws' : undefined,
           },
         };
       } else if (isService) {
@@ -390,11 +439,14 @@ export function AppShell() {
             name: node.data.label || node.data.title || 'Unnamed Service',
             displayName: node.data.title || node.data.label || 'Service',
             resourceType: node.data.resourceType as string || 'Microsoft.Unknown/resources',
-            iconPath: getIconForResourceType(node.data.resourceType as string),
+            iconPath: isAwsType
+              ? getAwsIconForResourceType(node.data.resourceType as string)
+              : getIconForResourceType(node.data.resourceType as string),
             status: 'draft' as const,
             properties: node.data.properties as Record<string, unknown> || {},
             location: node.data.region as string || undefined,
             resourceGroupName: (node.data.resourceGroup as string) || (node.data.properties as Record<string, unknown>)?.resourceGroupName as string || undefined,
+            csp: isAwsType ? 'aws' : undefined,
           },
         };
       }
@@ -402,8 +454,8 @@ export function AppShell() {
       // Fallback for other node types
       return {
         ...node,
-        type: node.type === 'azure.group' ? 'group' 
-            : node.type === 'azure.service' ? 'service' 
+        type: (node.type === 'azure.group' || node.type === 'aws.group') ? 'group'
+            : (node.type === 'azure.service' || node.type === 'aws.service') ? 'service'
             : node.type,
       };
     });
@@ -502,8 +554,7 @@ export function AppShell() {
     setIsPromptGenerating(true);
 
     try {
-      // Use the new backend endpoint that has the schema embedded
-      const response = await agentsService.generateDiagramFromPrompt(prompt);
+      const response = await agentsService.generateDiagramFromPrompt(prompt, activeCsp);
       const diagram = response.diagram;
 
       if (!diagram.nodes || !Array.isArray(diagram.nodes) || !diagram.edges || !Array.isArray(diagram.edges)) {
@@ -517,7 +568,7 @@ export function AppShell() {
     } finally {
       setIsPromptGenerating(false);
     }
-  }, [handleImportDiagram]);
+  }, [handleImportDiagram, activeCsp]);
   
   // Get diagram context for chat - both string and object versions
   const { diagramContext, architecture } = useMemo(() => {
@@ -576,13 +627,32 @@ export function AppShell() {
     }
   }, [isAuthModalOpen, refreshAzureAuth]);
 
-  // Deep links, e.g. /workspace?example=web-app-sql&select=web or /workspace?prompt=1.
+  // The diagram decides the cloud: once the canvas holds services, the active cloud
+  // (palette, prompt target, IaC format) follows them. Covers imports, prompt results
+  // and tab switches; an empty canvas leaves the toggle to the user.
+  useEffect(() => {
+    let aws = 0;
+    let azure = 0;
+    for (const n of nodes) {
+      if (n.type !== 'service') continue;
+      const data = n.data as { csp?: string; resourceType?: string };
+      if (data.csp === 'aws' || data.resourceType?.startsWith('AWS::')) aws += 1;
+      else if (data.resourceType?.startsWith('Microsoft.')) azure += 1;
+    }
+    if (aws === 0 && azure === 0) return;
+    const cloud = aws > azure ? 'aws' : 'azure';
+    if (useCspStore.getState().activeCsp !== cloud) useCspStore.getState().setActiveCsp(cloud);
+  }, [nodes]);
+
+  // Deep links, e.g. /workspace?example=web-app-sql&select=web or /workspace?prompt=1&cloud=aws.
   // Handled once per page load (the ref guards StrictMode's double invocation).
   const deepLinkHandled = useRef(false);
   useEffect(() => {
     if (deepLinkHandled.current) return;
     deepLinkHandled.current = true;
     const params = new URLSearchParams(window.location.search);
+    const cloud = params.get('cloud');
+    if (cloud === 'aws' || cloud === 'azure') useCspStore.getState().setActiveCsp(cloud);
     const exampleName = params.get('example');
     if (exampleName) {
       const example = getExample(exampleName);

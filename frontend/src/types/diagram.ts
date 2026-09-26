@@ -31,6 +31,8 @@ export interface ServiceNodeData {
   tags?: Record<string, string>;
   // Visual-only flag - if true, this node is NOT exported to IaC
   isVisualOnly?: boolean;
+  // Which CSP this node belongs to. Defaults to 'azure' for backward compat.
+  csp?: 'azure' | 'aws';
 }
 
 export interface GroupNodeData {
@@ -55,13 +57,19 @@ export interface GroupNodeData {
 
 export type NodeStatus = 'draft' | 'valid' | 'error' | 'deploying' | 'deployed';
 
-export type GroupNodeType = 
+export type GroupNodeType =
+  // Azure group types
   | 'resourceGroup'
   | 'virtualNetwork'
   | 'subnet'
   | 'region'
   | 'subscription'
-  | 'availabilityZone';
+  | 'availabilityZone'
+  // AWS group types (VPC/subnet are references to pre-existing networking)
+  | 'awsAccount'
+  | 'awsRegion'
+  | 'awsVpc'
+  | 'awsSubnet';
 
 export type ServiceNode = Node<ServiceNodeData, 'service'>;
 export type GroupNode = Node<GroupNodeData, 'group'>;
@@ -115,8 +123,12 @@ export interface SerializedEdge {
   data?: ConnectionEdgeData;
 }
 
-// Export format types for IaC generation backend
-export type ExportNodeType = 'azure.service' | 'azure.group';
+// Export format types for IaC generation backend.
+// Backward-compat: 'service'/'group' (internal), 'azure.*' (Azure export), 'aws.*' (AWS export).
+export type ExportNodeType =
+  | 'azure.service' | 'azure.group'
+  | 'aws.service' | 'aws.group'
+  | 'service' | 'group';
 export type ExportConnectionType = 'dependency' | 'network' | 'data' | 'identity';
 
 export interface ExportServiceData {

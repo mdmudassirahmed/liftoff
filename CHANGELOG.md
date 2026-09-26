@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0
+
+- AWS support: AWS palette (32 services), prompt-to-diagram for AWS, CloudFormation generation with modular output (root template, per-service modules, dev/test/prod parameters) and change-set deployment
+- AWS guardrails: 31 controls mapped to AWS Foundational Security Best Practices and AWS Config rules, with deterministic CloudFormation checks
+- CloudFormation is validated with cfn-lint and errors are sent back to the model for correction
+- CloudFormation-aware YAML handling (`!Ref`, `!Sub`, `!GetAtt`, ...) so post-processing and modular splitting work on real model output
+- Architecture advisor grounded in the Microsoft Learn MCP server (real MCP Streamable HTTP client) for every AI provider, with source links in the chat
+- The active cloud follows the diagram: importing or generating an AWS diagram switches the palette and IaC format automatically
+- Example: `examples/aws-serverless-api.json`; deep links accept `&cloud=aws`
+
 ## 1.1.0
 
 - Bring your own model: the agents now run on OpenAI, Azure OpenAI, any OpenAI-compatible server (Ollama, LM Studio, vLLM) or Azure AI Foundry, selected in `backend/.env` (`AI_PROVIDER`)

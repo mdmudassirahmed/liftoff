@@ -5,10 +5,12 @@ import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { ArchitectureAdvisorChat } from '@/components/Chat';
 import { ArchitectureExplorerModal } from '@/components/modals/ArchitectureExplorerModal';
+import { useCspStore } from '@/store/cspStore';
 
 export function IndexPage() {
   const [showAdvisorChat, setShowAdvisorChat] = useState(false);
   const [showArchExplorer, setShowArchExplorer] = useState(false);
+  const activeCsp = useCspStore((s) => s.activeCsp);
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -248,7 +250,7 @@ export function IndexPage() {
         <ArchitectureAdvisorChat
           isOverlay={true}
           onClose={() => setShowAdvisorChat(false)}
-          title="Architecture Advisor"
+          csp={activeCsp}
         />
       )}
 

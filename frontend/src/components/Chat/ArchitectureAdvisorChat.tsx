@@ -32,28 +32,52 @@ interface ArchitectureAdvisorChatProps {
   isOverlay?: boolean;
   /** Callback when close is clicked (only in overlay mode) */
   onClose?: () => void;
+  /** Active cloud service provider - controls guidance source */
+  csp?: 'azure' | 'aws';
 }
 
-// Suggested prompts for users
-const SUGGESTED_PROMPTS = [
+const AZURE_SUGGESTED_PROMPTS = [
   {
     icon: 'mdi:shield-check',
-    text: 'What are the security best practices for my architecture?',
+    text: 'What are the security best practices for my Azure architecture?',
     category: 'Security',
   },
   {
     icon: 'mdi:scale-balance',
-    text: 'How can I improve high availability and disaster recovery?',
+    text: 'How can I improve high availability and disaster recovery on Azure?',
     category: 'Reliability',
   },
   {
     icon: 'mdi:currency-usd',
-    text: 'What cost optimization strategies should I consider?',
+    text: 'What Azure cost optimization strategies should I consider?',
     category: 'Cost',
   },
   {
     icon: 'mdi:rocket-launch',
-    text: 'How can I improve performance and scalability?',
+    text: 'How can I improve performance on Azure using Well-Architected Framework?',
+    category: 'Performance',
+  },
+];
+
+const AWS_SUGGESTED_PROMPTS = [
+  {
+    icon: 'mdi:shield-check',
+    text: 'What are the AWS security best practices for my architecture (IAM, KMS, VPC)?',
+    category: 'Security',
+  },
+  {
+    icon: 'mdi:scale-balance',
+    text: 'How do I design for high availability across AWS availability zones?',
+    category: 'Reliability',
+  },
+  {
+    icon: 'mdi:currency-usd',
+    text: 'What AWS cost optimization strategies apply to my workload?',
+    category: 'Cost',
+  },
+  {
+    icon: 'mdi:rocket-launch',
+    text: 'How can I improve performance and scalability using AWS Well-Architected Framework?',
     category: 'Performance',
   },
 ];
@@ -61,10 +85,14 @@ const SUGGESTED_PROMPTS = [
 export const ArchitectureAdvisorChat: React.FC<ArchitectureAdvisorChatProps> = ({
   diagramContext,
   className,
-  title = 'Architecture Advisor',
+  title,
   isOverlay = false,
   onClose,
+  csp = 'azure',
 }) => {
+  const isAws = csp === 'aws';
+  const resolvedTitle = title ?? (isAws ? 'AWS Architecture Advisor' : 'Architecture Advisor');
+  const SUGGESTED_PROMPTS = isAws ? AWS_SUGGESTED_PROMPTS : AZURE_SUGGESTED_PROMPTS;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -232,7 +260,7 @@ export const ArchitectureAdvisorChat: React.FC<ArchitectureAdvisorChatProps> = (
             <Icon icon="mdi:robot-happy" className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">{title}</h3>
+            <h3 className="text-sm font-semibold text-white">{resolvedTitle}</h3>
             <div className="flex items-center gap-1.5">
               <span
                 className={cn(
@@ -246,7 +274,7 @@ export const ArchitectureAdvisorChat: React.FC<ArchitectureAdvisorChatProps> = (
               />
               <span className="text-[10px] text-white/80">
                 {agentStatus === 'connected'
-                  ? 'Azure Docs Agent (MCP)'
+                  ? isAws ? 'AWS Well-Architected (MCP)' : 'Azure Docs Agent (MCP)'
                   : agentStatus === 'checking'
                   ? 'Connecting...'
                   : 'Disconnected'}
@@ -275,7 +303,9 @@ export const ArchitectureAdvisorChat: React.FC<ArchitectureAdvisorChatProps> = (
               Ask for Architecture Advice
             </h4>
             <p className="text-sm text-gray-500 mb-6 max-w-xs">
-              Get enterprise-grade recommendations based on Microsoft's best practices and Azure Well-Architected Framework.
+              {isAws
+                ? "Get enterprise-grade recommendations based on AWS Well-Architected Framework and AWS security best practices."
+                : "Get enterprise-grade recommendations based on Microsoft's best practices and Azure Well-Architected Framework."}
             </p>
             <div className="grid grid-cols-2 gap-2 w-full">
               {SUGGESTED_PROMPTS.map((prompt, idx) => (
@@ -337,9 +367,9 @@ export const ArchitectureAdvisorChat: React.FC<ArchitectureAdvisorChatProps> = (
                   )}
                   {message.agentName && !message.isStreaming && (
                     <div className="flex items-center gap-1 mt-2 pt-2 border-t border-gray-100">
-                      <Icon icon="mdi:check-circle" className="w-3 h-3 text-brand-primary" />
+                      <Icon icon={isAws ? 'mdi:aws' : 'mdi:microsoft-azure'} className="w-3 h-3 text-brand-primary" />
                       <span className="text-[10px] text-gray-400">
-                        {message.agentName} via Microsoft Learn MCP
+                        {message.agentName} via {isAws ? 'AWS Well-Architected MCP' : 'Microsoft Learn MCP'}
                       </span>
                     </div>
                   )}
@@ -372,7 +402,7 @@ export const ArchitectureAdvisorChat: React.FC<ArchitectureAdvisorChatProps> = (
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about architecture best practices..."
+            placeholder={isAws ? 'Ask about AWS architecture best practices...' : 'Ask about architecture best practices...'}
             rows={1}
             className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 disabled:opacity-50"
             disabled={isLoading}

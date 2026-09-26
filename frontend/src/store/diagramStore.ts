@@ -1077,9 +1077,12 @@ export const useDiagramStore = create<DiagramState>()(
                 networkExceptionJustification: data.networkExceptionJustification,
               };
 
+              // Determine export type prefix based on node's CSP (default: azure)
+              const serviceCsp = (data as ServiceNodeData).csp ?? 'azure';
+              const serviceExportType: 'aws.service' | 'azure.service' = serviceCsp === 'aws' ? 'aws.service' : 'azure.service';
               return {
                 id: node.id,
-                type: 'azure.service' as const,
+                type: serviceExportType,
                 position: { x: node.position.x, y: node.position.y },
                 parentId: hasValidParent ? node.parentId : undefined,
                 extent: hasValidParent ? ('parent' as const) : undefined,
@@ -1105,9 +1108,12 @@ export const useDiagramStore = create<DiagramState>()(
                 addressPrefix: data.addressPrefix,
               };
 
+              // For groups, detect AWS groups by groupType prefix
+              const isAwsGroup = typeof data.groupType === 'string' && data.groupType.startsWith('aws');
+              const groupExportType: 'aws.group' | 'azure.group' = isAwsGroup ? 'aws.group' : 'azure.group';
               return {
                 id: node.id,
-                type: 'azure.group' as const,
+                type: groupExportType,
                 position: { x: node.position.x, y: node.position.y },
                 parentId: hasValidParent ? node.parentId : undefined,
                 extent: hasValidParent ? ('parent' as const) : undefined,

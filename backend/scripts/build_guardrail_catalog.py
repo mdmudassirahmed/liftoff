@@ -1,13 +1,16 @@
 """
 Build the bundled guardrail catalog (app/data/guardrails/azure_guardrails.json).
 
-The catalog is a curated set of Azure security controls derived from public
-guidance: the Microsoft Cloud Security Benchmark (MCSB) and Azure Policy
-built-in definitions. Each control maps a cloud service (see service_map.json)
-to a recommendation, the risk it mitigates, the MCSB control it implements and
-the built-in Azure Policy that audits it.
+The catalog is a curated set of security controls derived from public guidance:
+- Azure: the Microsoft Cloud Security Benchmark (MCSB) and built-in Azure Policy
+  definitions (CONTROLS).
+- AWS: AWS Foundational Security Best Practices (FSBP) and AWS Config managed
+  rules (AWS_CONTROLS).
+Each control maps a cloud service (see service_map.json) to a recommendation,
+the risk it mitigates, the benchmark control it implements and the policy/rule
+that audits it.
 
-Contributing a control: add a tuple to CONTROLS below, then run
+Contributing a control: add a tuple to CONTROLS or AWS_CONTROLS below, then run
 
     python scripts/build_guardrail_catalog.py
 
@@ -15,7 +18,7 @@ and commit the regenerated JSON. Keep the `service` value identical to a key in
 app/data/guardrails/service_map.json, otherwise the control never matches.
 
 Tuple layout:
-    (control_id, service, severity, theme, benchmark, azure_policy,
+    (control_id, service, severity, theme, benchmark, policy,
      recommendation, risk)
 """
 from __future__ import annotations
@@ -478,33 +481,182 @@ CONTROLS = [
      "Unreviewed preview features may not meet security and support requirements."),
 ]
 
+# AWS controls. `benchmark` is the AWS Foundational Security Best Practices (FSBP)
+# control ID; `policy` is the AWS Config managed rule that evaluates it (empty
+# when no single managed rule applies).
+AWS_CONTROLS = [
+    # ------------------------------------------------------------------ S3
+    ("LFT-AWS-S3-01", "Amazon S3", "Critical", "Public Access", "S3.8",
+     "s3-bucket-level-public-access-prohibited",
+     "Block public access on every bucket: BlockPublicAcls, BlockPublicPolicy, IgnorePublicAcls and RestrictPublicBuckets all true.",
+     "A bucket reachable by anonymous users leaks data and is the most common cause of cloud data breaches."),
+    ("LFT-AWS-S3-02", "Amazon S3", "High", "Data Protection", "S3.17",
+     "s3-default-encryption-kms",
+     "Encrypt objects at rest with default bucket encryption (SSE-KMS, or SSE-S3 at minimum).",
+     "Unencrypted objects are exposed if storage media or backups are compromised."),
+    ("LFT-AWS-S3-03", "Amazon S3", "Medium", "Data Protection", "S3.5",
+     "s3-bucket-ssl-requests-only",
+     "Require TLS: add a bucket policy that denies requests where aws:SecureTransport is false (SSL-only).",
+     "Plain HTTP requests expose object data and credentials in transit."),
+    ("LFT-AWS-S3-04", "Amazon S3", "Low", "Data Protection", "S3.14",
+     "s3-bucket-versioning-enabled",
+     "Enable versioning so overwritten or deleted objects can be recovered.",
+     "Accidental or malicious deletion becomes unrecoverable."),
+    ("LFT-AWS-S3-05", "Amazon S3", "Medium", "Logging", "S3.9",
+     "s3-bucket-logging-enabled",
+     "Enable server access logging to a separate logging bucket.",
+     "Access to sensitive objects cannot be investigated after an incident."),
 
-def main() -> None:
-    service_map = json.loads(SERVICE_MAP.read_text(encoding="utf-8"))["AZURE"]
+    # ------------------------------------------------------------------ RDS
+    ("LFT-AWS-RDS-01", "Amazon RDS", "Critical", "Public Access", "RDS.2",
+     "rds-instance-public-access-check",
+     "Keep database instances private: PubliclyAccessible false, reachable only from inside the VPC.",
+     "Internet-reachable databases are targeted by credential attacks within minutes."),
+    ("LFT-AWS-RDS-02", "Amazon RDS", "High", "Data Protection", "RDS.3",
+     "rds-storage-encrypted",
+     "Encrypt storage at rest (StorageEncrypted true) with a KMS key.",
+     "Snapshots and storage of unencrypted databases can be read if copied or leaked."),
+    ("LFT-AWS-RDS-03", "Amazon RDS", "Medium", "Resilience", "RDS.5",
+     "rds-multi-az-support",
+     "Deploy production instances Multi-AZ.",
+     "A single Availability Zone failure takes the database offline."),
+    ("LFT-AWS-RDS-04", "Amazon RDS", "Low", "Resilience", "RDS.8",
+     "rds-instance-deletion-protection-enabled",
+     "Enable deletion protection on production instances.",
+     "A mistaken stack update or console action can delete the database."),
+
+    # ------------------------------------------------------------------ EC2 / VPC
+    ("LFT-AWS-EC2-01", "Amazon EC2", "High", "Identity", "EC2.8",
+     "ec2-imdsv2-check",
+     "Require IMDSv2 for the instance metadata service (HttpTokens required).",
+     "IMDSv1 lets server-side request forgery steal the instance role's credentials."),
+    ("LFT-AWS-EC2-02", "Amazon EC2", "High", "Network Security", "EC2.9",
+     "ec2-instance-no-public-ip",
+     "Do not assign a public IP to instances; reach them through a load balancer or Session Manager.",
+     "Instances with public IPs are directly exposed to internet scanning."),
+    ("LFT-AWS-EC2-03", "Amazon EC2", "Medium", "Data Protection", "EC2.3",
+     "encrypted-volumes",
+     "Encrypt attached EBS volumes at rest.",
+     "Volume snapshots can expose data if shared or copied."),
+    ("LFT-AWS-VPC-01", "Amazon VPC", "High", "Network Security", "EC2.2",
+     "vpc-default-security-group-closed",
+     "Restrict the default security group so it allows no inbound or outbound traffic.",
+     "Resources placed in the default group accidentally become reachable."),
+    ("LFT-AWS-VPC-02", "Amazon VPC", "Medium", "Logging", "EC2.6",
+     "vpc-flow-logs-enabled",
+     "Enable VPC flow logs.",
+     "Network-level investigations lack evidence."),
+
+    # ------------------------------------------------------------------ Serverless / data
+    ("LFT-AWS-LAMBDA-01", "AWS Lambda", "Critical", "Public Access", "Lambda.1",
+     "lambda-function-public-access-prohibited",
+     "Do not allow public invocation in the function's resource-based policy.",
+     "Anyone could invoke the function and run up cost or reach downstream data."),
+    ("LFT-AWS-LAMBDA-02", "AWS Lambda", "Medium", "Posture", "Lambda.2",
+     "lambda-function-settings-check",
+     "Use a supported runtime and keep it up to date.",
+     "Deprecated runtimes stop receiving security patches."),
+    ("LFT-AWS-DDB-01", "Amazon DynamoDB", "Medium", "Resilience", "DynamoDB.2",
+     "dynamodb-pitr-enabled",
+     "Enable point-in-time recovery on tables.",
+     "Corrupted or deleted items cannot be restored."),
+    ("LFT-AWS-SQS-01", "Amazon SQS", "Medium", "Data Protection", "SQS.1",
+     "",
+     "Encrypt queues at rest (SqsManagedSseEnabled or a KMS key).",
+     "Message payloads are stored unencrypted."),
+    ("LFT-AWS-SNS-01", "Amazon SNS", "Medium", "Data Protection", "SNS.1",
+     "sns-encrypted-kms",
+     "Encrypt topics at rest with a KMS key.",
+     "Published messages are stored unencrypted."),
+    ("LFT-AWS-KMS-01", "AWS KMS", "Medium", "Data Protection", "KMS.4",
+     "cmk-backing-key-rotation-enabled",
+     "Enable automatic key rotation for customer managed keys.",
+     "Long-lived key material increases the impact of a key compromise."),
+    ("LFT-AWS-SM-01", "AWS Secrets Manager", "Medium", "Identity", "SecretsManager.1",
+     "secretsmanager-rotation-enabled-check",
+     "Enable automatic rotation for secrets.",
+     "Static credentials remain valid long after they leak."),
+
+    # ------------------------------------------------------------------ Containers / edge
+    ("LFT-AWS-EKS-01", "Amazon EKS", "High", "Network Security", "EKS.1",
+     "eks-endpoint-no-public-access",
+     "Make the cluster API endpoint private (EndpointPublicAccess false).",
+     "A public Kubernetes API endpoint is exposed to credential and vulnerability attacks."),
+    ("LFT-AWS-EKS-02", "Amazon EKS", "Medium", "Posture", "EKS.2",
+     "eks-cluster-supported-version",
+     "Run a supported Kubernetes version and upgrade before end of support.",
+     "Unsupported versions miss security fixes."),
+    ("LFT-AWS-ECR-01", "Amazon ECR", "Medium", "Posture", "ECR.1",
+     "ecr-private-image-scanning-enabled",
+     "Enable image scanning on push for private repositories.",
+     "Vulnerable images reach production unnoticed."),
+    ("LFT-AWS-ELB-01", "Elastic Load Balancing", "Medium", "Data Protection", "ELB.1",
+     "alb-http-to-https-redirection-check",
+     "Redirect all HTTP listener traffic to HTTPS on Application Load Balancers.",
+     "Clients can send data over unencrypted HTTP."),
+    ("LFT-AWS-CF-01", "Amazon CloudFront", "Medium", "Data Protection", "CloudFront.3",
+     "cloudfront-viewer-policy-https",
+     "Require HTTPS between viewers and CloudFront (redirect-to-https or https-only).",
+     "Content and cookies travel over plain HTTP."),
+    ("LFT-AWS-APIGW-01", "Amazon API Gateway", "Medium", "Logging", "APIGateway.1",
+     "api-gw-execution-logging-enabled",
+     "Enable execution logging for REST and WebSocket API stages.",
+     "API abuse cannot be investigated."),
+
+    # ------------------------------------------------------------------ Account level
+    ("LFT-AWS-ACCT-01", "AWS Account", "Critical", "Identity", "IAM.4",
+     "iam-root-access-key-check",
+     "Do not create access keys for the root user.",
+     "Root access keys give unrestricted, hard-to-audit access to the whole account."),
+    ("LFT-AWS-ACCT-02", "AWS Account", "Critical", "Identity", "IAM.6",
+     "root-account-hardware-mfa-enabled",
+     "Protect the root user with hardware MFA.",
+     "A phished root password means full account takeover."),
+    ("LFT-AWS-ACCT-03", "AWS Account", "High", "Logging", "CloudTrail.1",
+     "multi-region-cloudtrail-enabled",
+     "Enable a multi-Region CloudTrail trail that records management events.",
+     "Control-plane changes cannot be investigated."),
+    ("LFT-AWS-ACCT-04", "AWS Account", "High", "Posture", "GuardDuty.1",
+     "guardduty-enabled-centralized",
+     "Enable Amazon GuardDuty in every Region you use.",
+     "Threats such as credential exfiltration and crypto-mining go undetected."),
+]
+
+
+def _rows(csp: str, controls: list, service_map: dict, benchmark_prefix: str) -> list[dict]:
     rows = []
     seen = set()
-    for control_id, service, severity, theme, benchmark, policy, recommendation, risk in CONTROLS:
+    for control_id, service, severity, theme, benchmark, policy, recommendation, risk in controls:
         if control_id in seen:
             raise SystemExit(f"Duplicate control id: {control_id}")
         if service not in service_map:
-            raise SystemExit(f"{control_id}: service '{service}' is not in service_map.json")
+            raise SystemExit(f"{control_id}: service '{service}' is not in service_map.json ({csp})")
         seen.add(control_id)
         scope = service_map[service].get("scope", "resource")
         rows.append({
-            "csp": "AZURE",
+            "csp": csp,
             "service": service,
             "control_id": control_id,
             "layer": "Platform" if scope == "environment" else "Resource",
             "theme": theme,
             "severity": severity,
-            "benchmark": f"MCSB {benchmark}",
-            "azure_policy": policy,
+            "benchmark": f"{benchmark_prefix} {benchmark}",
+            "policy": policy,
             "risk": risk,
             "recommendation": recommendation,
             "user_actionable": True,
         })
-    OUT.write_text(json.dumps({"AZURE": rows}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Wrote {len(rows)} controls to {OUT}")
+    return rows
+
+
+def main() -> None:
+    service_map = json.loads(SERVICE_MAP.read_text(encoding="utf-8"))
+    catalog = {
+        "AZURE": _rows("AZURE", CONTROLS, service_map["AZURE"], "MCSB"),
+        "AWS": _rows("AWS", AWS_CONTROLS, service_map["AWS"], "AWS FSBP"),
+    }
+    OUT.write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"Wrote {len(catalog['AZURE'])} Azure and {len(catalog['AWS'])} AWS controls to {OUT}")
 
 
 if __name__ == "__main__":

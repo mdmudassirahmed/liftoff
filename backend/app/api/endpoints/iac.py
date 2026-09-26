@@ -1,6 +1,6 @@
 """
 Infrastructure as Code generation endpoint.
-Uses Azure AI Foundry iac-generator-agent.
+Azure diagrams produce Bicep, Terraform or ARM; AWS diagrams produce CloudFormation.
 """
 import re
 from fastapi import APIRouter
@@ -18,20 +18,36 @@ async def generate_iac(request: IaCRequest):
     """
     Generate Infrastructure as Code from architecture diagram.
     
-    Uses the iac-generator-agent from Azure AI Foundry.
-    
     - **architecture**: The diagram JSON from the frontend
-    - **format**: Output format (bicep, terraform, arm)
-    - **include_comments**: Add explanatory comments
-    - **target_environment**: development, staging, or production
+    - **format**: Output format (bicep, terraform, arm; cloudformation for AWS)
+    - **csp**: azure or aws (detected from the diagram when omitted)
     """
     try:
+        from app.services.guardrails import detect_cloud
+
+        csp = (request.csp or detect_cloud(request.architecture)).lower()
         logger.info(
-            f"IaC generation request | "
+            f"IaC generation request | csp={csp} | "
             f"format={request.format.value} | "
             f"nodes={len(request.architecture.get('nodes', []))}"
         )
-        
+
+        if csp == "aws":
+            from app.csp import CSPRegistry
+
+            result = await CSPRegistry.get_or_raise("aws").generate_iac(
+                architecture=request.architecture, fmt="cloudformation", modular=False
+            )
+            code = result.get("template", "")
+            return IaCResponse(
+                code=code,
+                format=IaCFormat.CLOUDFORMATION,
+                resources=_extract_cf_resources(code),
+                warnings=_get_aws_warnings(request.architecture),
+                mcp_enhanced=False,
+                compliance=_build_compliance(request.architecture, code, "cloudformation"),
+            )
+
         # Call iac-generator-agent via registry
         response = await AgentRegistry.generate_iac(
             architecture=request.architecture,
@@ -184,3 +200,32 @@ def _get_warnings(architecture: dict) -> list[str]:
             warnings.append("AKS cluster found - consider adding a Virtual Network for network isolation")
     
     return warnings
+
+
+def _get_aws_warnings(architecture: dict) -> list[str]:
+    """Warnings based on AWS architecture analysis."""
+    warnings = []
+    services = [n for n in architecture.get("nodes", []) if n.get("type") in ("aws.service", "service")]
+    service_types = [s.get("data", {}).get("resourceType", "") for s in services]
+
+    from app.core.config import get_settings
+
+    if get_settings().IAC_REFERENCE_EXISTING_NETWORKS:
+        from app.csp.aws.prompt import get_network_resource_types
+
+        found = [t for t in service_types if t in get_network_resource_types()]
+        if found:
+            warnings.append(
+                f"Landing-zone mode: {', '.join(found)} must already exist and are referenced, not created."
+            )
+    if "AWS::Lambda::Function" in service_types and "AWS::IAM::Role" not in service_types:
+        warnings.append("Lambda function without an IAM role - the template will add an execution role")
+    return warnings
+
+
+def _extract_cf_resources(code: str) -> list[IaCResource]:
+    """Extract resource logical IDs from CloudFormation YAML."""
+    return [
+        IaCResource(resource_type=m.group(2), name=m.group(1), code="")
+        for m in re.finditer(r"^  (\w+):\s*\n\s+Type:\s*(AWS::[^\s]+)", code, re.MULTILINE)
+    ]

@@ -1,20 +1,20 @@
 # Liftoff
 
-**From idea to liftoff. Type a sentence, get a secure Azure architecture you can actually deploy.**
+**From idea to liftoff. Type a sentence, get a secure Azure or AWS architecture you can actually deploy.**
 
 [![CI](https://github.com/mdmudassirahmed/liftoff/actions/workflows/ci.yml/badge.svg)](https://github.com/mdmudassirahmed/liftoff/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Bicep](https://img.shields.io/badge/IaC-Bicep%20%7C%20Terraform%20%7C%20ARM-0078D4)
-![Guardrails](https://img.shields.io/badge/guardrails-106%20controls-2E7D32)
+![IaC](https://img.shields.io/badge/IaC-Bicep%20%7C%20Terraform%20%7C%20ARM%20%7C%20CloudFormation-0078D4)
+![Guardrails](https://img.shields.io/badge/guardrails-137%20controls-2E7D32)
 
 ![The Liftoff workspace: a web app architecture on the canvas, with the service palette on the left and the properties panel on the right](docs/images/canvas.png)
 
-Liftoff is an open-source architecture designer for Azure. Describe a system in plain
-English or draw it on a canvas, and Liftoff turns it into modular Bicep or Terraform
-that is **hardened against 106 security controls, compiled before you see it, and
-previewed with Azure What-If before anything touches your subscription.**
+Liftoff is an open-source architecture designer for **Azure and AWS**. Describe a system
+in plain English or draw it on a canvas, and Liftoff turns it into modular Bicep,
+Terraform or CloudFormation that is **hardened against security guardrails, validated
+before you see it, and previewed before anything touches your cloud.**
 
-It runs on your machine, deploys with your own Azure sign-in, and works with the model
+It runs on your machine, deploys with your own cloud credentials, and works with the model
 you already have: OpenAI, Azure OpenAI, a local model through Ollama or LM Studio, or
 Azure AI Foundry.
 
@@ -107,6 +107,11 @@ recommended dependencies and offers the fix.
 
 ![Create from Prompt dialog](docs/images/prompt.png)
 
+**AWS too.** Switch the palette to AWS, or import an AWS diagram, and the same canvas
+works with CloudFormation resource types, an AWS properties panel and AWS guardrails.
+
+![An AWS serverless API on the canvas with the CloudFormation properties panel](docs/images/aws-canvas.png)
+
 **The landing page.**
 
 ![Liftoff landing page](docs/images/landing.png)
@@ -120,18 +125,26 @@ The whole flow at a glance:
 - **Prompt to diagram.** "A Python web app with a private SQL database, Key Vault and
   Application Insights" becomes a nested region, subscription, resource group and
   services layout you can edit.
-- **Visual designer.** 85 Azure services, grouping by region, subscription, resource
-  group, virtual network and subnet, with properties inherited down the hierarchy.
+- **Visual designer.** 85 Azure services and 32 AWS services, grouping by region,
+  subscription, resource group, virtual network and subnet (Azure) or account and region
+  (AWS), with properties inherited down the hierarchy.
 - **Schema-driven properties.** Required fields first, enums as dropdowns, current
   API versions, straight from the Bicep type definitions.
 - **Architecture validation.** An App Service without a plan, a private endpoint
   without a network, and similar gaps show up in the Issues panel.
-- **Modular IaC.** Bicep by default, Terraform and ARM on request, downloadable as a ZIP.
-- **Security guardrails.** 106 controls across 42 Azure services and platform
-  settings, with a pass/fail report per template.
-- **What-If and deploy.** Streaming preview, then `az deployment group create`.
-- **Architecture advisor.** A chat assistant grounded in Microsoft Learn that sees
-  the diagram on your canvas.
+- **Modular IaC.** Azure: Bicep by default, Terraform and ARM on request. AWS:
+  CloudFormation with a root template, per-service modules and dev/test/prod parameter
+  files. Everything downloads as a ZIP.
+- **Security guardrails.** 137 controls: 106 for Azure mapped to the Microsoft Cloud
+  Security Benchmark and Azure Policy, 31 for AWS mapped to AWS Foundational Security
+  Best Practices and AWS Config rules, with a pass/fail report per template.
+- **Validated output.** Bicep is compiled with `az bicep build`; CloudFormation is
+  checked with `cfn-lint`. Errors go back to the model for correction.
+- **Preview and deploy.** Azure: streaming What-If, then `az deployment group create`.
+  AWS: a CloudFormation change set with a lint gate.
+- **Architecture advisor.** A chat assistant that sees the diagram on your canvas. For
+  Azure, answers are grounded in current documentation fetched live from the
+  **Microsoft Learn MCP server**, with source links.
 - **Landing-zone mode.** For estates where a platform team owns networking, generated
   code references existing virtual networks instead of creating them.
 
@@ -184,7 +197,8 @@ No configuration is required to start.
 | Dependency validation and the Issues panel | None |
 | Saving to the browser and exporting diagram JSON | None |
 | Prompt to diagram, IaC generation, guardrail report, advisor chat | Any chat model: an OpenAI key, Azure OpenAI, a local model, or Azure AI Foundry ([setup](#enabling-the-ai-features)) |
-| What-If preview and deployment | Azure CLI signed in with `az login` |
+| Azure What-If preview and deployment | Azure CLI signed in with `az login` |
+| AWS CloudFormation deployment | `pip install -r backend/requirements-aws.txt` and AWS credentials (profile, SSO or environment) |
 
 ## A first session
 
@@ -194,6 +208,7 @@ No configuration is required to start.
    - http://localhost:5173/workspace?example=web-app-sql
    - http://localhost:5173/workspace?example=serverless-ai
    - http://localhost:5173/workspace?example=aks-microservices
+   - http://localhost:5173/workspace?example=aws-serverless-api (AWS)
 
    Add `&select=web` to open a resource's properties, or `&panel=issues` to open the
    Issues panel. You can also click **+** next to the tabs, choose **Import from JSON**,
@@ -204,6 +219,7 @@ No configuration is required to start.
    | [`examples/web-app-sql.json`](examples/web-app-sql.json) | Python web app on App Service with Azure SQL, Key Vault, Storage and Application Insights |
    | [`examples/serverless-ai.json`](examples/serverless-ai.json) | Function App with Azure OpenAI, Cosmos DB, Service Bus, Key Vault and Storage |
    | [`examples/aks-microservices.json`](examples/aks-microservices.json) | AKS behind an Application Gateway WAF, with Container Registry, PostgreSQL, Redis and workload identity |
+   | [`examples/aws-serverless-api.json`](examples/aws-serverless-api.json) | AWS: API Gateway, Lambda, DynamoDB, SQS, S3 and Secrets Manager |
 
 3. Select any resource. The properties panel on the right shows its real Azure
    properties, loaded from the Bicep schema.
@@ -223,10 +239,15 @@ To start from a sentence instead, choose **+** then **Create from Prompt** and t
 - *A retrieval-augmented chatbot with App Service, Azure OpenAI, Azure AI Search and a Storage account for documents in West Europe.*
 - *Three microservices on AKS behind an Application Gateway with WAF, pulling images from a private Container Registry.*
 
+Switch the palette to **AWS** first to generate AWS diagrams, for example:
+
+- *A serverless orders API: API Gateway, a Lambda function, a DynamoDB table, an SQS queue for events and an S3 bucket for receipts.*
+
 ## Enabling the AI features
 
-Diagram generation, IaC generation and the advisor are five specialised agents
-(orchestrator, IaC generator, documentation, security advisor, validator). Each is a
+Diagram generation, IaC generation and the advisor are six specialised agents
+(orchestrator, IaC generator, AWS IaC generator, documentation, security advisor,
+validator). Each is a
 system prompt that runs on whichever chat model you configure. Copy
 `backend/.env.example` to `backend/.env`, set **one** of the options below, and restart
 the backend.
@@ -260,17 +281,20 @@ flowchart LR
     subgraph API["FastAPI backend on 127.0.0.1"]
         Guard[Request guard: origin, host, token]
         Rails[Guardrail engine]
-        Fix[Bicep compile and correction loop]
-        Deploy[What-If and deploy]
+        Fix[Validate and correct: az bicep build / cfn-lint]
+        Deploy[Azure What-If / AWS change set]
     end
 
     subgraph Model["Your AI provider"]
         LLM[OpenAI · Azure OpenAI · local model · Azure AI Foundry]
     end
 
-    subgraph Azure
+    subgraph Clouds
         ARM[Azure Resource Manager]
+        CFN[AWS CloudFormation]
     end
+
+    Learn[(Microsoft Learn MCP server)]
 
     BicepTypes[(Azure/bicep-types-az)]
 
@@ -279,13 +303,17 @@ flowchart LR
     Guard --> Rails --> LLM
     LLM --> Fix --> Preview
     Preview --> Deploy -->|az CLI| ARM
+    Deploy -->|boto3| CFN
+    LLM -. advisor grounding .-> Learn
 ```
 
 The frontend is React 19 with TypeScript, Vite, Tailwind and React Flow. The backend
-is FastAPI. Five agents (orchestrator, IaC generator, documentation, security advisor,
-validator) are system prompts in `backend/app/agents/prompts.py`, run on the model you
-configure. On Azure AI Foundry the same prompts are installed as hosted agents, where
-the documentation agent additionally uses the Microsoft Learn MCP server.
+is FastAPI, with a plugin per cloud (`backend/app/csp/`). Six agents (orchestrator, IaC
+generator, AWS IaC generator, documentation, security advisor, validator) are system
+prompts in `backend/app/agents/prompts.py`, run on the model you configure. The
+documentation agent is grounded in the Microsoft Learn MCP server
+(`backend/app/mcp/learn_mcp.py`), which Liftoff calls over MCP's Streamable HTTP
+transport for every provider.
 
 ## Configuration
 
@@ -293,7 +321,7 @@ Every setting has a safe default.
 
 | File | Settings |
 |------|----------|
-| `backend/.env` ([example](backend/.env.example)) | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `AZURE_OPENAI_*`, `AZURE_AI_PROJECT_ENDPOINT`, `CORS_ORIGINS`, `ALLOWED_HOSTS`, `API_AUTH_TOKEN`, `GUARDRAILS_ENABLED`, `IAC_REFERENCE_EXISTING_NETWORKS` |
+| `backend/.env` ([example](backend/.env.example)) | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `AZURE_OPENAI_*`, `AZURE_AI_PROJECT_ENDPOINT`, `AWS_*`, `CORS_ORIGINS`, `ALLOWED_HOSTS`, `API_AUTH_TOKEN`, `GUARDRAILS_ENABLED`, `IAC_REFERENCE_EXISTING_NETWORKS` |
 | `frontend/.env.local` ([example](frontend/.env.example)) | `VITE_API_URL`, `VITE_API_TOKEN` |
 | `agents/.env` ([example](agents/.env.example)) | `AZURE_AI_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME` |
 
@@ -301,7 +329,7 @@ All `.env` files are ignored by git.
 
 ## Security model
 
-The backend runs Azure CLI commands with your identity, so it is built as a
+The backend deploys with your Azure CLI and AWS credentials, so it is built as a
 single-user tool that runs on your machine:
 
 - it listens on `127.0.0.1` only,
@@ -309,20 +337,24 @@ single-user tool that runs on your machine:
 - it can require a bearer token (`API_AUTH_TOKEN`),
 - every value passed to `az` is validated, commands run without a shell, and
   uploaded template paths cannot leave a temporary directory,
-- it holds no keys: Azure AI Foundry is reached through `DefaultAzureCredential`.
+- it stores no keys of its own: Azure access goes through `DefaultAzureCredential`, AWS
+  through the standard credential chain, and AWS deployments can be limited to
+  `AWS_ALLOWED_ACCOUNT_IDS`.
 
 Read [SECURITY.md](SECURITY.md) before running it for other people, and to report a
 vulnerability privately.
 
 ## FAQ
 
-**Where does my data go?** Your diagram is sent to your own Azure AI Foundry project
-when you use an AI feature. The browser downloads public schema and icon data from
-GitHub, `schema.management.azure.com` and the Iconify API. The advisor queries
-Microsoft Learn. There is no telemetry.
+**Where does my data go?** Your diagram is sent to the AI provider you configure when
+you use an AI feature. The browser downloads public schema and icon data from GitHub,
+`schema.management.azure.com` and the Iconify API. For Azure questions the backend
+searches Microsoft Learn through its public MCP server. There is no telemetry.
 
-**Does it support AWS or Google Cloud?** Not today. The guardrail engine and catalog
-are keyed by cloud provider, so adding one is a contained piece of work.
+**Does it support AWS and Google Cloud?** AWS yes: diagrams, CloudFormation
+generation, AWS guardrails and change-set deployment. Google Cloud not yet; clouds are
+plugins (`backend/app/csp/`) and the guardrail catalog is keyed by cloud, so adding one
+is a contained piece of work.
 
 **Which models can I use?** Anything with an OpenAI-compatible chat API: OpenAI,
 Azure OpenAI, local models through Ollama or LM Studio, hosted gateways such as

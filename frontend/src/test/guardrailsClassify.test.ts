@@ -14,7 +14,7 @@ describe('compliance report contract', () => {
     const row = goodReport.by_resource[0].guardrails[0];
     expect(row.control_id).toMatch(/^LFT-/);
     expect(row.benchmark).toMatch(/^MCSB /);
-    expect(typeof row.azure_policy).toBe('string');
+    expect(typeof row.policy).toBe('string');
     expect(['Resource', 'Platform']).toContain(row.layer);
   });
 

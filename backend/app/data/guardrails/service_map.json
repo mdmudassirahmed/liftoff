@@ -1,5 +1,5 @@
 {
-  "_comment": "Maps catalog service names to Azure resource types (the node data.resourceType join key) and a scope. scope='resource' guardrails attach to matching diagram nodes; scope='environment' guardrails are subscription/identity-level and are surfaced in a separate advisory group. Resource types are matched case-insensitively in app/services/guardrails.py. Several services intentionally share a resource type (e.g. App Service + Function App -> Microsoft.Web/sites); the matcher unions their guardrails and dedupes by control_id.",
+  "_comment": "Maps catalog service names (per cloud) to resource types (the node data.resourceType join key) and a scope. scope='resource' guardrails attach to matching diagram nodes; scope='environment' guardrails are subscription/identity-level and are surfaced in a separate advisory group. Resource types are matched case-insensitively in app/services/guardrails.py. Several services intentionally share a resource type (e.g. App Service + Function App -> Microsoft.Web/sites); the matcher unions their guardrails and dedupes by control_id. The key name azure_resource_types is historical; AWS entries list CloudFormation types.",
   "AZURE": {
     "Function App": {
       "scope": "resource",
@@ -248,6 +248,103 @@
     "Subscription Feature": {
       "scope": "environment",
       "azure_resource_types": []
+    }
+  },
+  "AWS": {
+    "Amazon S3": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::S3::Bucket"
+      ]
+    },
+    "Amazon RDS": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::RDS::DBInstance",
+        "AWS::RDS::DBCluster"
+      ]
+    },
+    "Amazon EC2": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::EC2::Instance"
+      ]
+    },
+    "Amazon VPC": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::EC2::VPC"
+      ]
+    },
+    "AWS Lambda": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::Lambda::Function"
+      ]
+    },
+    "Amazon DynamoDB": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::DynamoDB::Table"
+      ]
+    },
+    "Amazon SQS": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::SQS::Queue"
+      ]
+    },
+    "Amazon SNS": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::SNS::Topic"
+      ]
+    },
+    "AWS KMS": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::KMS::Key"
+      ]
+    },
+    "AWS Secrets Manager": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::SecretsManager::Secret"
+      ]
+    },
+    "Amazon EKS": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::EKS::Cluster"
+      ]
+    },
+    "Amazon ECR": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::ECR::Repository"
+      ]
+    },
+    "Elastic Load Balancing": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::ElasticLoadBalancingV2::LoadBalancer"
+      ]
+    },
+    "Amazon CloudFront": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::CloudFront::Distribution"
+      ]
+    },
+    "Amazon API Gateway": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "AWS::ApiGateway::RestApi",
+        "AWS::ApiGatewayV2::Api"
+      ]
+    },
+    "AWS Account": {
+      "scope": "environment"
     }
   }
 }

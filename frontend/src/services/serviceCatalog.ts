@@ -83,7 +83,7 @@ const PROVIDER_CATEGORY_MAP: Record<string, { name: string; icon: string }> = {
   'Microsoft.DataFactory': { name: 'Analytics', icon: 'mdi:factory' },
   'Microsoft.Synapse': { name: 'Analytics', icon: 'mdi:database-sync' },
   'Microsoft.Databricks': { name: 'Analytics', icon: 'mdi:fire' },
-  'Microsoft.StreamAnalytics': { name: 'Analytics', icon: 'mdi:stream' },
+  'Microsoft.StreamAnalytics': { name: 'Analytics', icon: 'mdi:waves' },
   'Microsoft.Devices': { name: 'IoT', icon: 'mdi:devices' },
   'Microsoft.DigitalTwins': { name: 'IoT', icon: 'mdi:cube-outline' },
   'Microsoft.SignalRService': { name: 'Web & App Services', icon: 'mdi:signal' },

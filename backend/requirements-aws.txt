@@ -1,0 +1,5 @@
+# Optional: deploy AWS CloudFormation from the UI (change-set + lint gate).
+# pip install -r requirements-aws.txt
+-r requirements.txt
+boto3>=1.34.0
+cfn-lint>=0.87.0

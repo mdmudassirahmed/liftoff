@@ -6,7 +6,11 @@ import { cn } from '@/lib/utils';
 import { getAzureServiceIcon } from '@/lib/azureIcons';
 import type { AzureService, AzureServiceCategory, GroupTemplate, DragData, VisualTemplate } from '@/types';
 import { groupTemplates, visualTemplates } from '@/data/groupTemplates';
+import type { GroupTemplateWithCSP } from '@/data/groupTemplates';
 import { useServiceCatalog } from '@/hooks/useServiceCatalog';
+import { useAwsServiceCatalog } from '@/hooks/useAwsServiceCatalog';
+import { useCspStore } from '@/store/cspStore';
+import type { CSP } from '@/types';
 
 // Cap how many services render inside a single category so "Browse all" over the
 // full live catalog (thousands of types) can never jank the demo. Curated
@@ -36,15 +40,25 @@ const categoryIcons: Record<string, string> = {
 export function ServicePalette() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set() // Start with all categories collapsed
+    new Set()
   );
   const [activeTab, setActiveTab] = useState<'services' | 'groups'>('services');
   const [browseAll, setBrowseAll] = useState(false);
 
-  // Curated baseline paints instantly; the live Azure catalog merges in the
-  // background. On any failure the hook stays on the curated baseline (R1).
-  const { services, categories, allServices, isLive, loading, liveCount } =
+  // CSP selection (persisted in cspStore)
+  const { activeCsp, setActiveCsp } = useCspStore();
+
+  // Azure catalog: curated baseline + live background merge
+  const { services: azureServices, categories: azureCategories, allServices: allAzureServices, isLive, loading, liveCount } =
     useServiceCatalog();
+
+  // AWS catalog: static curated list
+  const { services: awsServices, categories: awsCategories } = useAwsServiceCatalog();
+
+  // Active catalog based on CSP
+  const services = activeCsp === 'aws' ? (awsServices as unknown as AzureService[]) : azureServices;
+  const categories = activeCsp === 'aws' ? (awsCategories as unknown as AzureServiceCategory[]) : azureCategories;
+  const allServices = activeCsp === 'aws' ? (awsServices as unknown as AzureService[]) : allAzureServices;
 
   const searching = searchQuery.trim().length > 0;
 
@@ -136,8 +150,29 @@ export function ServicePalette() {
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Components</h2>
-        
+        <h2 className="text-sm font-semibold text-gray-900 mb-2">Components</h2>
+
+        {/* CSP Toggle */}
+        <div className="flex gap-1 p-0.5 bg-gray-100 rounded-md mb-3">
+          {(['azure', 'aws'] as CSP[]).map((csp) => (
+            <button
+              key={csp}
+              onClick={() => { setActiveCsp(csp); setSearchQuery(''); setBrowseAll(false); }}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1 py-1 text-[11px] font-semibold rounded transition-colors',
+                activeCsp === csp
+                  ? csp === 'aws'
+                    ? 'bg-[#FF9900] text-white shadow-sm'
+                    : 'bg-[#0078D4] text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800'
+              )}
+            >
+              <Icon icon={csp === 'aws' ? 'mdi:aws' : 'mdi:microsoft-azure'} className="w-3 h-3" />
+              {csp.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-3">
           <button
@@ -196,7 +231,9 @@ export function ServicePalette() {
         {activeTab === 'services' && (
           <div className="flex items-center justify-between mt-2 min-h-[20px]">
             <span className="text-[10px] text-gray-500 flex items-center gap-1">
-              {loading && !isLive ? (
+              {activeCsp === 'aws' ? (
+                <span className="text-gray-400">{services.length} AWS services</span>
+              ) : loading && !isLive ? (
                 <>
                   <Icon icon="mdi:loading" className="w-3 h-3 animate-spin text-gray-400" />
                   Syncing latest Azure services...
@@ -210,7 +247,7 @@ export function ServicePalette() {
                 <span className="text-gray-400">{services.length} services</span>
               )}
             </span>
-            {isLive && !searching && (
+            {activeCsp !== 'aws' && isLive && !searching && (
               <button
                 onClick={() => setBrowseAll((v) => !v)}
                 className={cn(
@@ -253,7 +290,7 @@ export function ServicePalette() {
                     />
                     <Icon
                       icon={categoryIcons[category] || 'mdi:cube-outline'}
-                      className="w-4 h-4 text-azure-blue"
+                      className={cn('w-4 h-4', activeCsp === 'aws' ? 'text-[#FF9900]' : 'text-azure-blue')}
                     />
                     <span>{category}</span>
                     <span className="ml-auto text-xs text-gray-400">
@@ -279,8 +316,8 @@ export function ServicePalette() {
                         >
                           <div className="w-6 h-6 rounded bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
                             <Icon
-                              icon={getAzureServiceIcon(service.iconPath)}
-                              className="w-4 h-4 text-azure-blue"
+                              icon={activeCsp === 'aws' ? (service.iconPath || 'mdi:cloud') : getAzureServiceIcon(service.iconPath)}
+                              className={cn('w-4 h-4', activeCsp === 'aws' ? 'text-[#FF9900]' : 'text-azure-blue')}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -359,14 +396,16 @@ export function ServicePalette() {
             {/* Divider */}
             <div className="border-t border-gray-200" />
 
-            {/* Azure Groups Section */}
+            {/* Group Containers Section (CSP-filtered) */}
             <div>
               <p className="px-2 text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1">
                 <Icon icon="mdi:folder-multiple-outline" className="w-3 h-3" />
-                Azure Containers
+                {activeCsp === 'aws' ? 'AWS Containers' : 'Azure Containers'}
               </p>
               <div className="space-y-2">
-                {groupTemplates.map((template) => (
+                {(groupTemplates as GroupTemplateWithCSP[])
+                  .filter((t) => !t.csp || t.csp === activeCsp)
+                  .map((template) => (
                   <div
                     key={template.id}
                     draggable

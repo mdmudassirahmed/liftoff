@@ -319,6 +319,7 @@ AGENT_NAMES = {
     "azure_docs": "azure-docs-agent",
     "security_advisor": "security-advisor-agent",
     "validation": "validation-agent",
+    "aws_iac_generator": "aws-iac-generator-agent",
 }
 
 
@@ -329,11 +330,34 @@ class AgentsUnavailableError(RuntimeError):
 
 @dataclass
 class AgentResponse:
-    """Response from a Foundry agent."""
+    """Response from an agent."""
     content: str
     agent_name: str
     agent_type: str
     sources: Optional[List[str]] = None
+    grounding: Optional[str] = None  # e.g. "microsoft-learn-mcp"
+
+
+def _grounding_query(message: str) -> str:
+    """The user's actual question: long composed prompts end with it."""
+    text = (message or "").strip()
+    if len(text) <= 400:
+        return text
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    last = lines[-1] if lines else text
+    for prefix in ("User Question:", "User:", "Question:"):
+        if last.startswith(prefix):
+            last = last[len(prefix):].strip()
+    return last[:400]
+
+
+def _is_aws_context(context: Optional[Dict[str, Any]]) -> bool:
+    arch = (context or {}).get("architecture")
+    if not isinstance(arch, dict):
+        return False
+    from app.services.guardrails import detect_cloud
+
+    return detect_cloud(arch) == "AWS"
 
 
 class FoundryClient:
@@ -512,9 +536,23 @@ class FoundryClient:
                 
                 if context_parts:
                     full_message = "\n\n".join(context_parts) + f"\n\nUser Question: {message}"
-            
+
+            # Ground Azure documentation answers in Microsoft Learn via its MCP server.
+            # A Foundry-hosted docs agent already has the MCP tool attached, so this
+            # applies to chat-completions providers only (and not to AWS diagrams).
+            sources: Optional[List[str]] = None
+            grounding: Optional[str] = None
+            if agent_type == "azure_docs" and self._provider is not None and not _is_aws_context(context):
+                from app.mcp.learn_mcp import format_grounding, get_learn_client
+
+                results = await get_learn_client().search(_grounding_query(message))
+                if results:
+                    full_message = f"{format_grounding(results)}\n\n{full_message}"
+                    sources = [r.url for r in results]
+                    grounding = "microsoft-learn-mcp"
+
             logger.info(f"Calling agent: {agent_name} | message_length={len(full_message)} | has_context={context is not None}")
-            
+
             if self._provider is not None:
                 # Chat-completions provider: the agent is its system prompt.
                 output_text = await self._provider.complete(SYSTEM_PROMPTS[agent_type], full_message)
@@ -536,8 +574,10 @@ class FoundryClient:
                 content=output_text,
                 agent_name=agent_name,
                 agent_type=agent_type,
+                sources=sources,
+                grounding=grounding,
             )
-            
+
         except Exception as e:
             logger.error(f"Agent call failed | agent={agent_name} | error={e}")
             raise

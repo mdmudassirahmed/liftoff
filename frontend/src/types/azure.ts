@@ -51,13 +51,17 @@ export interface GroupTemplate {
   description?: string;
 }
 
-export type GroupType = 
+export type GroupType =
   | 'resourceGroup'
   | 'virtualNetwork'
   | 'subnet'
   | 'region'
   | 'subscription'
-  | 'availabilityZone';
+  | 'availabilityZone'
+  | 'awsAccount'
+  | 'awsRegion'
+  | 'awsVpc'
+  | 'awsSubnet';
 
 export interface AzureLocation {
   name: string;

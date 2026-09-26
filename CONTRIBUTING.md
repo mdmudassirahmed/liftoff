@@ -29,10 +29,14 @@ CI runs the same commands.
 
 ## Good first contributions
 
-- **Add a guardrail.** Add a tuple to `CONTROLS` in
+- **Add a guardrail.** Add a tuple to `CONTROLS` (Azure) or `AWS_CONTROLS` (AWS) in
   `backend/scripts/build_guardrail_catalog.py`, run the script, and commit the
-  regenerated JSON. Map it to a Microsoft Cloud Security Benchmark control and,
-  where one exists, the built-in Azure Policy that audits it.
+  regenerated JSON. Map it to a Microsoft Cloud Security Benchmark or AWS Foundational
+  Security Best Practices control and, where one exists, the built-in Azure Policy or
+  AWS Config rule that audits it.
+- **Add an AWS service.** Extend `frontend/src/data/awsServices.json` and
+  `backend/app/data/aws/awsServices.json` (CloudFormation type, required/optional
+  properties, defaults).
 - **Add an enforceable check.** Add an entry to `_ENFORCED_PROPERTIES` and `_CHECKS`
   in `backend/app/services/guardrails.py`, with a test in `tests/test_guardrails.py`.
 - **Add a dependency rule.** Extend `frontend/src/lib/serviceDependencies.ts`

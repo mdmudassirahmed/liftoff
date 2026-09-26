@@ -69,6 +69,16 @@ class Settings(BaseSettings):
     # "Authorization: Bearer <token>" (the frontend reads VITE_API_TOKEN).
     API_AUTH_TOKEN: str = ""
 
+    # --- AWS (only needed to deploy CloudFormation from the UI) -----------------
+    # Credentials come from the standard AWS chain (env vars, ~/.aws, SSO, instance role).
+    AWS_DEFAULT_REGION: str = "us-east-1"
+    AWS_PROFILE: str = ""
+    AWS_ASSUME_ROLE_ARN: str = ""
+    # Comma-separated account IDs deployments are allowed to target (empty = any).
+    AWS_ALLOWED_ACCOUNT_IDS: str = ""
+    # Optional IAM permissions boundary applied to generated roles and Lambda functions.
+    AWS_PERMISSIONS_BOUNDARY_ARN: str = ""
+
     # Security guardrails injected into IaC prompts + compliance report.
     GUARDRAILS_ENABLED: bool = True
     # Landing-zone mode: generated IaC references existing VNets/subnets

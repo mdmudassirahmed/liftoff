@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { cn } from '@/lib/utils';
 import { useDiagramStore, useIaCStore } from '@/store';
+import { useCspStore } from '@/store/cspStore';
 import { useIaCGeneration } from '@/hooks/useIaCGeneration';
 import { validateArchitecture, getValidationSummary, type SchemaValidationResult, type SchemaValidationIssue } from '@/services/bicepSchemaValidator';
 import { api } from '@/services/api';
@@ -70,6 +71,7 @@ export function IaCPreviewModal({
   const nodes = useDiagramStore((state) => state.nodes);
   const edges = useDiagramStore((state) => state.edges);
   const getDiagramForExport = useDiagramStore((state) => state.getDiagramForExport);
+  const { activeCsp } = useCspStore();
 
   const { generateIaC, downloadCode, copyCode } = useIaCGeneration();
   
@@ -141,14 +143,16 @@ export function IaCPreviewModal({
     user?: string;
     error?: string;
   } | null>(null);
+  const [awsRegion, setAwsRegion] = useState('us-east-1');
+  const [awsStackName, setAwsStackName] = useState('liftoff-dev-stack');
 
   // Reset validation when modal opens or nodes change
   useEffect(() => {
     if (isOpen) {
       // Reset validation state when modal opens
       setSchemaValidation(null);
-      // Reset to Bicep tab when modal opens
-      setSelectedFormat('bicep');
+      // Reset to default format for active CSP
+      setSelectedFormat(activeCsp === 'aws' ? 'cloudformation' : 'bicep');
       setFoundryGenerated(false);
       setFoundryAgentName(null);
       setCompliance(null);
@@ -159,57 +163,69 @@ export function IaCPreviewModal({
       setShowDeployModal(false);
       setShowPreviewModal(false);
     }
+    // Reset only when the modal opens; CSP switches are handled by the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // Reset format tab when CSP changes to avoid stale format selection
+  useEffect(() => {
+    setSelectedFormat(activeCsp === 'aws' ? 'cloudformation' : 'bicep');
+  }, [activeCsp]);
 
   // Also reset validation when nodes change (user made modifications)
   useEffect(() => {
     setSchemaValidation(null);
   }, [nodes]);
 
-  // Generate IaC using Azure AI Foundry Agent
-  const generateWithFoundry = useCallback(async (targetFormat: 'bicep' | 'terraform') => {
+  // Generate IaC using Azure AI Foundry Agent (or AWS CloudFormation)
+  const generateWithFoundry = useCallback(async (targetFormat: string) => {
     setGenerating(true);
     setFoundryGenerated(false);
     setCompliance(null);
     setModularFiles([]);
     setSelectedFile(null);
-    
+
     try {
       const diagram = getDiagramForExport();
-      
+      const csp = targetFormat === 'cloudformation' ? 'aws' : activeCsp;
+
       if (isModular) {
-        // Generate modular structure
+        // Generate modular structure (Azure formats AND CloudFormation)
         const response = await api.generateModularIaCWithFoundry(
           { nodes: diagram.nodes, edges: diagram.edges },
-          targetFormat
+          targetFormat,
+          csp
         );
-        
+
         setModularFiles(response.files);
         setStructureSummary(response.structure_summary);
         setFoundryAgentName(response.agent_name);
         setCompliance(response.compliance ?? null);
-        
-        // Set the first file as selected (usually main.bicep)
-        const mainFile = response.files.find(f => f.path === 'main.bicep') || response.files[0];
+
+        const mainFile = response.files.find(f =>
+          targetFormat === 'cloudformation' ? f.path === 'template.yaml' : f.path === 'main.bicep'
+        ) || response.files[0];
         if (mainFile) {
           setSelectedFile(mainFile.path);
-          setGeneratedCode(mainFile.content, targetFormat);
+          setGeneratedCode(mainFile.content, targetFormat as IaCFormat);
         }
-        
+
         console.log(`Generated modular ${targetFormat} via ${response.agent_name} in ${response.duration_ms.toFixed(0)}ms | ${response.files.length} files`);
       } else {
-        // Generate single file
+        // Generate single file (always used for CloudFormation)
         const response = await api.generateIaCWithFoundry(
           { nodes: diagram.nodes, edges: diagram.edges },
-          targetFormat
+          targetFormat,
+          false,
+          csp
         );
-        
-        setGeneratedCode(response.template, targetFormat);
+
+        setGeneratedCode(response.template, targetFormat as IaCFormat);
         setFoundryAgentName(response.agent_name);
         setCompliance(response.compliance ?? null);
         console.log(`Generated ${targetFormat} via ${response.agent_name} in ${response.duration_ms.toFixed(0)}ms`);
       }
-      
+
       setFoundryGenerated(true);
     } catch (error) {
       console.error('Foundry IaC generation failed:', error);
@@ -218,7 +234,7 @@ export function IaCPreviewModal({
     } finally {
       setGenerating(false);
     }
-  }, [getDiagramForExport, setGenerating, setGeneratedCode, generateIaC, isModular]);
+  }, [getDiagramForExport, activeCsp, setGenerating, setGeneratedCode, generateIaC, isModular]);
 
   // Get diagram JSON for export
   const diagramJson = getDiagramForExport();
@@ -383,6 +399,7 @@ export function IaCPreviewModal({
   const handleOpenDeployModal = async () => {
     setShowDeployModal(true);
     setDeployResult(null);
+    if (activeCsp === 'aws') return; // AWS: no Azure auth context needed
     await loadDeployContext();
   };
 
@@ -546,44 +563,63 @@ export function IaCPreviewModal({
     setIsApplyingFix(false);
   };
 
-  // Handle deploy to Azure
+  // Handle deploy to Azure or AWS
   const handleDeploy = async () => {
-    if (!resourceGroup || modularFiles.length === 0) return;
-    
+    if (activeCsp === 'aws') {
+      if (!generatedCode) return;
+    } else {
+      if (!resourceGroup || modularFiles.length === 0) return;
+    }
+
     setIsDeploying(true);
     setDeployResult(null);
     setDeployStep('validating');
     setDeployProgress(10);
-    
+
     try {
-      // Step 1: Validating files
       setDeployProgress(20);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause for UX
-      
-      // Step 2: Starting deployment
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       setDeployStep('deploying');
       setDeployProgress(40);
-      
-      const result = await api.deployToAzure(
-        modularFiles.map(f => ({ path: f.path, content: f.content })),
-        resourceGroup,
-        'parameters/dev.parameters.json',
-        selectedSubscriptionId || undefined
-      );
-      
-      // Step 3: Processing result
-      setDeployProgress(90);
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      setDeployResult(result);
-      setDeployProgress(100);
-      
-      if (result.success) {
-        setDeployStep('completed');
-        console.log(`Deployment succeeded: ${result.deployment_name}`);
+
+      if (activeCsp === 'aws') {
+        // Always deploy the consolidated root template, not whatever file the user has selected in the preview
+        const rootFile = modularFiles.find(f => f.path === 'template.yaml');
+        const deployTemplate = rootFile?.content || generatedCode!;
+        const awsResult = await api.deployToAws(deployTemplate, awsStackName, awsRegion || undefined);
+        setDeployProgress(90);
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const noChanges = awsResult.status === 'NO_CHANGES';
+        const succeeded = noChanges || (awsResult.status?.includes('COMPLETE') && !awsResult.status?.includes('ROLLBACK'));
+        setDeployResult({
+          success: succeeded,
+          deployment_name: awsResult.stack_name,
+          provisioning_state: noChanges ? 'No Changes' : awsResult.status,
+          duration_seconds: 0,
+          outputs: {},
+          resources: [],
+          error: succeeded ? undefined : (awsResult.message || awsResult.status),
+          warnings: noChanges ? ['Stack is already up to date. No changes were deployed.'] : [],
+        });
+        setDeployProgress(100);
+        setDeployStep(succeeded ? 'completed' : 'failed');
       } else {
-        setDeployStep('failed');
-        console.error(`Deployment failed: ${result.error}`);
+        const result = await api.deployToAzure(
+          modularFiles.map(f => ({ path: f.path, content: f.content })),
+          resourceGroup,
+          'parameters/dev.parameters.json',
+          selectedSubscriptionId || undefined
+        );
+        setDeployProgress(90);
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setDeployResult(result);
+        setDeployProgress(100);
+        if (result.success) {
+          setDeployStep('completed');
+        } else {
+          setDeployStep('failed');
+        }
       }
     } catch (error) {
       console.error('Deployment failed:', error);
@@ -591,7 +627,7 @@ export function IaCPreviewModal({
       setDeployProgress(100);
       setDeployResult({
         success: false,
-        deployment_name: 'unknown',
+        deployment_name: activeCsp === 'aws' ? awsStackName : 'unknown',
         provisioning_state: 'Failed',
         duration_seconds: 0,
         outputs: {},
@@ -716,7 +752,10 @@ export function IaCPreviewModal({
 
         {/* Format Tabs */}
         <div className="flex items-center gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50">
-          {(['json', 'bicep', 'terraform', 'arm'] as ModalFormat[]).map((fmt) => (
+          {(activeCsp === 'aws'
+            ? (['json', 'cloudformation'] as ModalFormat[])
+            : (['json', 'bicep', 'terraform', 'arm'] as ModalFormat[])
+          ).map((fmt) => (
             <button
               key={fmt}
               onClick={() => handleFormatChange(fmt)}
@@ -732,11 +771,12 @@ export function IaCPreviewModal({
               {fmt === 'bicep' && 'Bicep'}
               {fmt === 'terraform' && 'Terraform'}
               {fmt === 'arm' && 'ARM JSON'}
+              {fmt === 'cloudformation' && 'CloudFormation'}
             </button>
           ))}
           
-          {/* Modular Toggle - Only show for IaC formats */}
-          {selectedFormat !== 'json' && (
+          {/* Modular Toggle - Only show for Azure IaC formats (not CloudFormation) */}
+          {selectedFormat !== 'json' && selectedFormat !== 'cloudformation' && (
             <label className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 cursor-pointer">
               <input
                 type="checkbox"
@@ -756,16 +796,20 @@ export function IaCPreviewModal({
           {/* Generate Buttons - Only show for IaC formats */}
           {selectedFormat !== 'json' && (
             <button
-              onClick={() => generateWithFoundry(selectedFormat === 'arm' ? 'bicep' : selectedFormat as 'bicep' | 'terraform')}
+              onClick={() => generateWithFoundry(selectedFormat === 'arm' ? 'bicep' : selectedFormat)}
               disabled={isGenerating || nodes.length === 0}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg',
-                'bg-azure-blue text-white hover:bg-azure-blue/90 transition-colors',
-                'disabled:opacity-50 disabled:cursor-not-allowed'
+                selectedFormat === 'cloudformation'
+                  ? 'bg-[#FF9900] text-white hover:bg-[#FF9900]/90'
+                  : 'bg-azure-blue text-white hover:bg-azure-blue/90',
+                'transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
               )}
             >
               <Icon icon={isGenerating ? 'mdi:loading' : 'mdi:robot'} className={cn('w-4 h-4', isGenerating && 'animate-spin')} />
-              {isGenerating ? 'Generating...' : `Generate ${selectedFormat === 'bicep' ? 'Bicep' : selectedFormat === 'terraform' ? 'Terraform' : 'ARM'}`}
+              {isGenerating
+                ? 'Generating...'
+                : `Generate ${selectedFormat === 'bicep' ? 'Bicep' : selectedFormat === 'terraform' ? 'Terraform' : selectedFormat === 'cloudformation' ? 'CloudFormation' : 'ARM'}`}
             </button>
           )}
           
@@ -1084,7 +1128,7 @@ export function IaCPreviewModal({
                 setWhatIfResult(null);
                 await handlePreviewChanges();
               }}
-              disabled={!foundryGenerated || modularFiles.length === 0 || isDeploying}
+              disabled={!foundryGenerated || (activeCsp === 'aws' ? !generatedCode : modularFiles.length === 0) || isDeploying}
               className={cn(
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all',
                 'border-2 border-blue-500 text-blue-600 bg-blue-50',
@@ -1106,15 +1150,15 @@ export function IaCPreviewModal({
             </button>
             <button
               onClick={handleOpenDeployModal}
-              disabled={!foundryGenerated || modularFiles.length === 0}
+              disabled={!foundryGenerated || (activeCsp === 'aws' ? !generatedCode : modularFiles.length === 0)}
               className={cn(
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
-                'bg-brand-accent text-white hover:bg-brand-accentDark',
+                activeCsp === 'aws' ? 'bg-[#FF9900] text-white hover:bg-[#e88a00]' : 'bg-brand-accent text-white hover:bg-brand-accentDark',
                 'disabled:opacity-50 disabled:cursor-not-allowed'
               )}
             >
               <Icon icon="mdi:rocket-launch-outline" className="w-4 h-4" />
-              Deploy to Azure
+              {activeCsp === 'aws' ? 'Deploy to AWS' : 'Deploy to Azure'}
             </button>
           </div>
         </div>
@@ -1528,10 +1572,15 @@ export function IaCPreviewModal({
             className="bg-white rounded-xl shadow-2xl w-[650px] max-h-[85vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-brand-accent to-brand-accentDark">
+            <div className={cn(
+              'flex items-center justify-between p-4 border-b border-gray-200',
+              activeCsp === 'aws'
+                ? 'bg-gradient-to-r from-[#FF9900] to-[#e88a00]'
+                : 'bg-gradient-to-r from-brand-accent to-brand-accentDark'
+            )}>
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Icon icon="mdi:rocket-launch" className="w-5 h-5" />
-                Deploy to Azure
+                {activeCsp === 'aws' ? 'Deploy to AWS' : 'Deploy to Azure'}
               </h3>
               <button
                 onClick={() => !isDeploying && setShowDeployModal(false)}
@@ -1609,8 +1658,8 @@ export function IaCPreviewModal({
                       deployStep === 'preview' ? 'text-blue-500' : 'text-brand-accent'
                     )} />
                     {deployStep === 'preview' && 'Analyzing what will change...'}
-                    {deployStep === 'validating' && 'Validating Bicep templates...'}
-                    {deployStep === 'deploying' && 'Deploying resources to Azure...'}
+                    {deployStep === 'validating' && (activeCsp === 'aws' ? 'Validating CloudFormation template...' : 'Validating Bicep templates...')}
+                    {deployStep === 'deploying' && (activeCsp === 'aws' ? 'Deploying stack to AWS...' : 'Deploying resources to Azure...')}
                   </p>
                   
                   {/* Live Logs Console - Show during preview */}
@@ -1703,8 +1752,46 @@ export function IaCPreviewModal({
                 </div>
               )}
 
-              {/* Auth Status */}
-              {azureAuthStatus && !isDeploying && (
+              {/* AWS config: region + stack name */}
+              {activeCsp === 'aws' && !isDeploying && !deployResult && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      <Icon icon="mdi:earth" className="w-4 h-4 inline mr-1" />
+                      AWS Region
+                    </label>
+                    <input
+                      type="text"
+                      value={awsRegion}
+                      onChange={(e) => setAwsRegion(e.target.value)}
+                      placeholder="us-east-1"
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900] transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      <Icon icon="mdi:layers-outline" className="w-4 h-4 inline mr-1" />
+                      Stack Name
+                    </label>
+                    <input
+                      type="text"
+                      value={awsStackName}
+                      onChange={(e) => setAwsStackName(e.target.value)}
+                      placeholder="liftoff-dev-stack"
+                      className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900] transition-all text-sm"
+                    />
+                  </div>
+                  {generatedCode && (
+                    <div className="flex items-center gap-2 text-xs text-gray-500 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200">
+                      <Icon icon="mdi:file-code-outline" className="w-4 h-4 text-[#FF9900]" />
+                      <span>template.yaml ({(generatedCode.length / 1024).toFixed(1)} KB) will be deployed via CloudFormation change-set</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Auth Status (Azure only) */}
+              {activeCsp !== 'aws' && azureAuthStatus && !isDeploying && (
                 <div className={cn(
                   'p-4 rounded-xl flex items-start gap-3 border',
                   azureAuthStatus.authenticated 
@@ -1752,8 +1839,8 @@ export function IaCPreviewModal({
                 </div>
               )}
 
-              {/* Resource Group Selection */}
-              {azureAuthStatus?.authenticated && !isDeploying && !deployResult && (
+              {/* Resource Group Selection (Azure only) */}
+              {activeCsp !== 'aws' && azureAuthStatus?.authenticated && !isDeploying && !deployResult && (
                 <div className="space-y-3">
                   {renderSubscriptionSelect()}
                   <label className="block text-sm font-semibold text-gray-700">
@@ -1785,8 +1872,8 @@ export function IaCPreviewModal({
                 </div>
               )}
 
-              {/* Files to Deploy */}
-              {modularFiles.length > 0 && !isDeploying && !deployResult && !whatIfResult && (
+              {/* Files to Deploy (Azure only - AWS shows template info in the config block above) */}
+              {activeCsp !== 'aws' && modularFiles.length > 0 && !isDeploying && !deployResult && !whatIfResult && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     <Icon icon="mdi:file-multiple" className="w-4 h-4 inline mr-1" />
@@ -2199,13 +2286,15 @@ export function IaCPreviewModal({
                 </button>
                 
                 {/* Deploy Button */}
-                {azureAuthStatus?.authenticated && !deployResult?.success && (
+                {(activeCsp === 'aws' ? (!!generatedCode && !deployResult?.success) : (azureAuthStatus?.authenticated && !deployResult?.success)) && (
                   <button
                     onClick={handleDeploy}
-                    disabled={isDeploying || !resourceGroup}
+                    disabled={isDeploying || (activeCsp === 'aws' ? (!generatedCode || !awsStackName) : !resourceGroup)}
                     className={cn(
                       'flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-lg transition-all',
-                      'bg-gradient-to-r from-brand-accent to-brand-accentDark text-white',
+                      activeCsp === 'aws'
+                        ? 'bg-gradient-to-r from-[#FF9900] to-[#e88a00] text-white'
+                        : 'bg-gradient-to-r from-brand-accent to-brand-accentDark text-white',
                       'hover:shadow-lg hover:scale-[1.02]',
                       'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none'
                     )}
@@ -2218,7 +2307,7 @@ export function IaCPreviewModal({
                     ) : (
                       <>
                         <Icon icon="mdi:rocket-launch" className="w-4 h-4" />
-                        Deploy Now
+                        {activeCsp === 'aws' ? 'Deploy to AWS' : 'Deploy Now'}
                       </>
                     )}
                   </button>

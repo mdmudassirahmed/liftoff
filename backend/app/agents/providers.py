@@ -1,7 +1,7 @@
 """
 Chat model providers.
 
-Liftoff's five agents are system prompts (app/agents/prompts.py). Any chat model
+Liftoff's agents are system prompts (app/agents/prompts.py). Any chat model
 can run them. Pick a provider in backend/.env:
 
     AI_PROVIDER=auto | openai | azure-openai | foundry | none

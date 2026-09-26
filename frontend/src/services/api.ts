@@ -201,19 +201,21 @@ class ApiClient {
   // IaC Generation via Azure AI Foundry Agents
   async generateIaCWithFoundry(
     architecture: { nodes: unknown[]; edges: unknown[] },
-    format: 'bicep' | 'terraform' = 'bicep',
-    modular: boolean = false
+    format: string = 'bicep',
+    modular: boolean = false,
+    csp: string = 'azure'
   ): Promise<{ template: string; format: string; agent_name: string; duration_ms: number; compliance?: ComplianceReport | null }> {
     return this.request('/api/agents/iac/generate', {
       method: 'POST',
-      body: JSON.stringify({ architecture, format, modular }),
+      body: JSON.stringify({ architecture, format, modular, csp }),
     });
   }
 
   // Modular IaC Generation via Azure AI Foundry Agents
   async generateModularIaCWithFoundry(
     architecture: { nodes: unknown[]; edges: unknown[] },
-    format: 'bicep' | 'terraform' = 'bicep'
+    format: string = 'bicep',
+    csp: string = 'azure'
   ): Promise<{
     files: Array<{ path: string; content: string; description: string }>;
     format: string;
@@ -224,7 +226,7 @@ class ApiClient {
   }> {
     return this.request('/api/agents/iac/generate', {
       method: 'POST',
-      body: JSON.stringify({ architecture, format, modular: true }),
+      body: JSON.stringify({ architecture, format, modular: true, csp }),
     });
   }
 
@@ -459,6 +461,24 @@ class ApiClient {
       }),
     });
   }
+
+  /**
+   * Deploy CloudFormation template to AWS (create/update stack via change-set)
+   */
+  async deployToAws(
+    templateYaml: string,
+    stackName: string,
+    region?: string,
+  ): Promise<AwsDeployResultResponse> {
+    return this.request('/api/agents/aws/deploy', {
+      method: 'POST',
+      body: JSON.stringify({
+        template_yaml: templateYaml,
+        stack_name: stackName,
+        region: region || undefined,
+      }),
+    });
+  }
 }
 
 // Type for deploy result
@@ -496,7 +516,16 @@ interface WhatIfResponse {
   warnings: string[];
 }
 
-export type { DeployResultResponse, WhatIfChange, WhatIfResponse };
+// Type for AWS deploy result
+interface AwsDeployResultResponse {
+  stack_name: string;
+  status: string;
+  change_set_id?: string;
+  events: Array<Record<string, unknown>>;
+  message?: string;
+}
+
+export type { DeployResultResponse, AwsDeployResultResponse, WhatIfChange, WhatIfResponse };
 
 export const api = new ApiClient();
 export default api;

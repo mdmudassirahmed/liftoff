@@ -1,0 +1,73 @@
+{
+  "nodes": [
+    {
+      "id": "acct",
+      "type": "aws.group",
+      "position": { "x": 60, "y": 40 },
+      "data": { "title": "AWS Account", "label": "acct", "groupType": "awsAccount", "csp": "aws", "region": "us-east-1" }
+    },
+    {
+      "id": "region",
+      "type": "aws.group",
+      "position": { "x": 80, "y": 80 },
+      "parentId": "acct",
+      "extent": "parent",
+      "data": { "title": "us-east-1", "label": "region", "groupType": "awsRegion", "csp": "aws", "region": "us-east-1" }
+    },
+    {
+      "id": "api",
+      "type": "aws.service",
+      "position": { "x": 80, "y": 120 },
+      "parentId": "region",
+      "extent": "parent",
+      "data": { "title": "HTTP API", "label": "api", "resourceType": "AWS::ApiGatewayV2::Api", "csp": "aws", "region": "us-east-1", "iconPath": "mdi:web", "properties": { "ProtocolType": "HTTP" } }
+    },
+    {
+      "id": "fn",
+      "type": "aws.service",
+      "position": { "x": 340, "y": 120 },
+      "parentId": "region",
+      "extent": "parent",
+      "data": { "title": "Orders Function", "label": "fn", "resourceType": "AWS::Lambda::Function", "csp": "aws", "region": "us-east-1", "iconPath": "mdi:function", "properties": { "Runtime": "python3.12", "MemorySize": 256, "Timeout": 30 } }
+    },
+    {
+      "id": "table",
+      "type": "aws.service",
+      "position": { "x": 600, "y": 120 },
+      "parentId": "region",
+      "extent": "parent",
+      "data": { "title": "Orders Table", "label": "table", "resourceType": "AWS::DynamoDB::Table", "csp": "aws", "region": "us-east-1", "iconPath": "mdi:table", "properties": { "BillingMode": "PAY_PER_REQUEST" } }
+    },
+    {
+      "id": "queue",
+      "type": "aws.service",
+      "position": { "x": 80, "y": 300 },
+      "parentId": "region",
+      "extent": "parent",
+      "data": { "title": "Order Events", "label": "queue", "resourceType": "AWS::SQS::Queue", "csp": "aws", "region": "us-east-1", "iconPath": "mdi:tray-full", "properties": {} }
+    },
+    {
+      "id": "bucket",
+      "type": "aws.service",
+      "position": { "x": 340, "y": 300 },
+      "parentId": "region",
+      "extent": "parent",
+      "data": { "title": "Receipts Bucket", "label": "bucket", "resourceType": "AWS::S3::Bucket", "csp": "aws", "region": "us-east-1", "iconPath": "mdi:bucket", "properties": { "VersioningConfiguration": { "Status": "Enabled" } } }
+    },
+    {
+      "id": "secret",
+      "type": "aws.service",
+      "position": { "x": 600, "y": 300 },
+      "parentId": "region",
+      "extent": "parent",
+      "data": { "title": "Payment API Key", "label": "secret", "resourceType": "AWS::SecretsManager::Secret", "csp": "aws", "region": "us-east-1", "iconPath": "mdi:safe", "properties": {} }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "api", "target": "fn", "type": "animated", "data": { "connectionType": "dependency" } },
+    { "id": "e2", "source": "fn", "target": "table", "type": "animated", "data": { "connectionType": "dependency" } },
+    { "id": "e3", "source": "fn", "target": "queue", "type": "animated", "data": { "connectionType": "dependency" } },
+    { "id": "e4", "source": "fn", "target": "bucket", "type": "animated", "data": { "connectionType": "dependency" } },
+    { "id": "e5", "source": "fn", "target": "secret", "type": "animated", "data": { "connectionType": "dependency" } }
+  ]
+}

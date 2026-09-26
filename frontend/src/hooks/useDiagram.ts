@@ -3,11 +3,12 @@
 import { useCallback } from 'react';
 import type { XYPosition, ReactFlowInstance } from '@xyflow/react';
 import { useDiagramStore } from '@/store';
-import type { 
-  AzureService, 
-  GroupTemplate, 
+import { useCspStore } from '@/store/cspStore';
+import type {
+  AzureService,
+  GroupTemplate,
   VisualTemplate,
-  ServiceNodeData, 
+  ServiceNodeData,
   GroupNodeData,
   DiagramNode,
   DiagramEdge,
@@ -16,6 +17,7 @@ import type {
 import { generateId } from '@/lib/utils';
 
 export function useDiagram() {
+  const { activeCsp } = useCspStore();
   const {
     nodes,
     edges,
@@ -62,7 +64,8 @@ export function useDiagram() {
               displayName: service.name,
               resourceType: service.resourceType,
               iconPath: service.iconPath,
-              properties: { ...service.defaultProperties },
+              properties: { ...(service.defaultProperties ?? {}) },
+              csp: activeCsp,
             },
             position
           );
@@ -98,7 +101,7 @@ export function useDiagram() {
         console.error('Error handling drop:', error);
       }
     },
-    [addServiceNode, addGroupNode]
+    [addServiceNode, addGroupNode, activeCsp]
   );
 
   const handleDragOver = useCallback((event: React.DragEvent) => {

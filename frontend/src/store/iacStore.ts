@@ -6,22 +6,28 @@ import type {
   ValidationMessage,
   IaCMetadata,
   GenerateIaCResponse,
+  ComplianceReport,
 } from '@/types';
+import type { CSP } from '@/types';
 
 interface IaCStoreState extends IaCState {
+  // CSP-aware fields
+  csp: CSP;
+  compliance: ComplianceReport | null;
   // Actions
   setGenerating: (isGenerating: boolean) => void;
-  setGeneratedCode: (code: string, format: IaCFormat) => void;
+  setGeneratedCode: (code: string, format: IaCFormat, csp?: CSP) => void;
   setValidationResults: (
     errors: ValidationMessage[],
     warnings: ValidationMessage[]
   ) => void;
   setMetadata: (metadata: IaCMetadata | null) => void;
-  handleGenerationResponse: (response: GenerateIaCResponse) => void;
+  setCompliance: (compliance: ComplianceReport | null) => void;
+  handleGenerationResponse: (response: GenerateIaCResponse, csp?: CSP) => void;
   clearGeneration: () => void;
 }
 
-const initialState: IaCState = {
+const initialState: IaCState & { csp: CSP; compliance: ComplianceReport | null } = {
   generatedCode: '',
   format: 'bicep',
   isGenerating: false,
@@ -29,6 +35,8 @@ const initialState: IaCState = {
   validationWarnings: [],
   metadata: null,
   lastGeneratedAt: null,
+  csp: 'azure',
+  compliance: null,
 };
 
 export const useIaCStore = create<IaCStoreState>()(
@@ -39,30 +47,36 @@ export const useIaCStore = create<IaCStoreState>()(
       setGenerating: (isGenerating) => {
         set({ isGenerating });
       },
-      
-      setGeneratedCode: (code, format) => {
+
+      setGeneratedCode: (code, format, csp) => {
         set({
           generatedCode: code,
           format,
+          csp: csp ?? 'azure',
           lastGeneratedAt: new Date().toISOString(),
         });
       },
-      
+
       setValidationResults: (errors, warnings) => {
         set({
           validationErrors: errors,
           validationWarnings: warnings,
         });
       },
-      
+
       setMetadata: (metadata) => {
         set({ metadata });
       },
-      
-      handleGenerationResponse: (response) => {
+
+      setCompliance: (compliance) => {
+        set({ compliance });
+      },
+
+      handleGenerationResponse: (response, csp) => {
         set({
           generatedCode: response.code,
           format: response.format,
+          csp: csp ?? 'azure',
           validationErrors: response.validationErrors,
           validationWarnings: response.validationWarnings,
           metadata: response.metadata || null,
@@ -70,7 +84,7 @@ export const useIaCStore = create<IaCStoreState>()(
           lastGeneratedAt: new Date().toISOString(),
         });
       },
-      
+
       clearGeneration: () => {
         set(initialState);
       },
