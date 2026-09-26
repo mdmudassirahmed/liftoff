@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 # Agent type constants for API compatibility
 class AgentType:
     """Agent type identifiers."""
+    DIAGRAM_GENERATOR = "diagram_generator"
     ORCHESTRATOR = "orchestrator"
     IAC_GENERATOR = "iac_generator"
     AZURE_DOCS = "azure_docs"

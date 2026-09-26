@@ -16,6 +16,7 @@ import { useDiagramStore } from '@/store/diagramStore';
 import { useTabsStore } from '@/store/tabsStore';
 import { getExample } from '@/lib/examples';
 import { useCspStore } from '@/store/cspStore';
+import type { CSP } from '@/types/csp';
 import agentsService from '@/services/agentsService';
 import { api } from '@/services/api';
 
@@ -110,6 +111,8 @@ export function AppShell() {
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [isPromptGenerating, setIsPromptGenerating] = useState(false);
   const [promptError, setPromptError] = useState<string | null>(null);
+  // Cloud requested by a deep link (?prompt=1&cloud=aws); otherwise the dialog uses the active cloud.
+  const [promptCloud, setPromptCloud] = useState<CSP | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authInfo, setAuthInfo] = useState<{
     user?: string;
@@ -265,21 +268,21 @@ export function AppShell() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTabId]);
   
-  // Save on unmount or browser close
+  // Save on unmount or browser close. Runs once and reads the live store: a cleanup
+  // tied to currentTabId would fire on every tab switch, after the canvas already
+  // holds the new tab, and write that diagram into the tab being left.
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (currentTabId) {
-        const content = saveCurrentToTab();
-        useTabsStore.getState().saveTabContent(currentTabId, content);
-      }
+      const { currentTabId: tabId, saveCurrentToTab: snapshot } = useDiagramStore.getState();
+      if (tabId) useTabsStore.getState().saveTabContent(tabId, snapshot());
     };
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       handleBeforeUnload();
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [currentTabId, saveCurrentToTab]);
+  }, []);
   
   // Handle tab change from TabBar
   const handleTabChange = useCallback((tabId: string) => {
@@ -549,26 +552,28 @@ export function AppShell() {
     
   }, [currentTabId, saveCurrentToTab, createTab, setCurrentTabId, loadDiagram]);
 
-  const handleGenerateFromPrompt = useCallback(async (prompt: string, projectName: string) => {
+  const handleGenerateFromPrompt = useCallback(async (prompt: string, projectName: string, cloud: CSP) => {
     setPromptError(null);
     setIsPromptGenerating(true);
 
     try {
-      const response = await agentsService.generateDiagramFromPrompt(prompt, activeCsp);
+      const response = await agentsService.generateDiagramFromPrompt(prompt, cloud);
       const diagram = response.diagram;
 
       if (!diagram.nodes || !Array.isArray(diagram.nodes) || !diagram.edges || !Array.isArray(diagram.edges)) {
         throw new Error('Invalid diagram JSON returned by agent.');
       }
 
+      useCspStore.getState().setActiveCsp(cloud);
       handleImportDiagram(diagram, projectName || 'AI Project');
       setIsPromptModalOpen(false);
+      setPromptCloud(null);
     } catch (error) {
       setPromptError(error instanceof Error ? error.message : 'Failed to generate diagram');
     } finally {
       setIsPromptGenerating(false);
     }
-  }, [handleImportDiagram, activeCsp]);
+  }, [handleImportDiagram]);
   
   // Get diagram context for chat - both string and object versions
   const { diagramContext, architecture } = useMemo(() => {
@@ -652,7 +657,10 @@ export function AppShell() {
     deepLinkHandled.current = true;
     const params = new URLSearchParams(window.location.search);
     const cloud = params.get('cloud');
-    if (cloud === 'aws' || cloud === 'azure') useCspStore.getState().setActiveCsp(cloud);
+    if (cloud === 'aws' || cloud === 'azure') {
+      useCspStore.getState().setActiveCsp(cloud);
+      setPromptCloud(cloud);
+    }
     const exampleName = params.get('example');
     if (exampleName) {
       const example = getExample(exampleName);
@@ -721,16 +729,20 @@ export function AppShell() {
           onImport={handleImportDiagram}
         />
 
+        {isPromptModalOpen && (
         <PromptDiagramModal
-          isOpen={isPromptModalOpen}
+          isOpen
           isLoading={isPromptGenerating}
           error={promptError}
+          defaultCloud={promptCloud ?? activeCsp}
           onClose={() => {
             setPromptError(null);
             setIsPromptModalOpen(false);
+            setPromptCloud(null);
           }}
           onGenerate={handleGenerateFromPrompt}
         />
+        )}
 
         {/* Chat Panel */}
         <ChatContainer diagramContext={diagramContext} architecture={architecture} />

@@ -1,6 +1,6 @@
 # Liftoff backend
 
-FastAPI service behind the Liftoff canvas. It runs six agents (system prompts in
+FastAPI service behind the Liftoff canvas. It runs seven agents (system prompts in
 `app/agents/prompts.py`) on the chat model you configure to turn diagrams into IaC,
 checks the output against security guardrails, and runs What-If and deployments with
 the Azure CLI. See the [root README](../README.md)
@@ -87,7 +87,7 @@ ruff check .
 
 ```
 app/
-├── agents/           prompts.py (the six agents), providers.py, foundry/ client + registry
+├── agents/           prompts.py (the seven agents), providers.py, foundry/ client + registry
 ├── api/endpoints/    agents, chat, iac, deploy, health
 ├── core/             settings, logging, request guard middleware
 ├── csp/              cloud plugins: azure/, aws/ (CloudFormation, cfn-lint, change sets)

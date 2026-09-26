@@ -3,28 +3,57 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { cn } from '@/lib/utils';
+import type { CSP } from '@/types/csp';
 
 interface PromptDiagramModalProps {
   isOpen: boolean;
   isLoading: boolean;
   error?: string | null;
+  /** Cloud selected when the dialog opens; the user can switch it. */
+  defaultCloud: CSP;
   onClose: () => void;
-  onGenerate: (prompt: string, projectName: string) => void;
+  onGenerate: (prompt: string, projectName: string, cloud: CSP) => void;
 }
+
+const CLOUDS: { id: CSP; label: string; icon: string; examples: string[] }[] = [
+  {
+    id: 'azure',
+    label: 'Azure',
+    icon: 'mdi:microsoft-azure',
+    examples: [
+      '- A web app in eastus with App Service, Key Vault and a Storage Account',
+      '- A microservices architecture with API Management and 3 Container Apps',
+      '- A data pipeline with Event Hubs, Stream Analytics and Cosmos DB',
+    ],
+  },
+  {
+    id: 'aws',
+    label: 'AWS',
+    icon: 'mdi:aws',
+    examples: [
+      '- A serverless API with API Gateway, Lambda and DynamoDB in us-east-1',
+      '- A containerised service on ECS Fargate behind an Application Load Balancer',
+      '- An event pipeline with SQS, Lambda, SNS and an S3 archive bucket',
+    ],
+  },
+];
 
 export function PromptDiagramModal({
   isOpen,
   isLoading,
   error,
+  defaultCloud,
   onClose,
   onGenerate,
 }: PromptDiagramModalProps) {
   const [prompt, setPrompt] = useState('');
   const [projectName, setProjectName] = useState('AI Project');
+  const [cloud, setCloud] = useState<CSP>(defaultCloud);
+  const cloudInfo = CLOUDS.find((c) => c.id === cloud) ?? CLOUDS[0];
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
-    onGenerate(prompt.trim(), projectName.trim() || 'AI Project');
+    onGenerate(prompt.trim(), projectName.trim() || 'AI Project', cloud);
   };
 
   const handleClose = () => {
@@ -64,6 +93,34 @@ export function PromptDiagramModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {/* Cloud */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Cloud</label>
+            <div className="inline-flex rounded-lg bg-gray-100 p-1" role="group" aria-label="Cloud">
+              {CLOUDS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-pressed={cloud === c.id}
+                  data-cloud={c.id}
+                  onClick={() => setCloud(c.id)}
+                  disabled={isLoading}
+                  className={cn(
+                    'flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    cloud === c.id
+                      ? c.id === 'aws'
+                        ? 'bg-[#FF9900] text-white shadow-sm'
+                        : 'bg-[#0078D4] text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  )}
+                >
+                  <Icon icon={c.icon} className="w-4 h-4" />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Project Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -92,11 +149,9 @@ export function PromptDiagramModal({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={[
-                'Describe your architecture in plain English, for example:',
+                `Describe your ${cloudInfo.label} architecture in plain English, for example:`,
                 '',
-                '- A web app in eastus with App Service, Key Vault and a Storage Account',
-                '- A microservices architecture with API Management and 3 Container Apps',
-                '- A data pipeline with Event Hubs, Stream Analytics and Cosmos DB',
+                ...cloudInfo.examples,
               ].join('\n')}
               rows={8}
               className={cn(

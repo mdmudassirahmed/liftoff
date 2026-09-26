@@ -130,7 +130,7 @@ export function IndexPage() {
                   </div>
                   <h3 className="text-base font-semibold text-gray-900">AI Agents in Use</h3>
                   <p className="text-sm text-gray-600">
-                    Six specialised agents run on the model you configure: OpenAI, Azure OpenAI, a local model, or Azure AI Foundry.
+                    Seven specialised agents run on the model you configure: OpenAI, Azure OpenAI, a local model, or Azure AI Foundry.
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-2 text-xs font-medium text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-3 py-1 rounded-full">

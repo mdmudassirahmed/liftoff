@@ -29,3 +29,21 @@ def test_foundry_script_dry_run_needs_no_azure():
         cwd=BACKEND, capture_output=True, text=True, check=True,
     ).stdout
     assert all(spec["name"] in out for spec in AGENTS.values())
+
+
+def test_diagram_requests_use_the_diagram_agent():
+    assert "diagram_generator" in AGENTS
+    assert "Never translate an AWS request to Azure" in SYSTEM_PROMPTS["diagram_generator"]
+
+
+def test_extract_diagram_json_tolerates_fences_and_prose():
+    import pytest
+
+    from app.api.endpoints.agents import extract_diagram_json
+
+    raw = 'Here you go:\n```json\n{"nodes": [{"id": "a"}], "edges": []}\n```\nEnjoy {not json}'
+    assert extract_diagram_json(raw)["nodes"][0]["id"] == "a"
+    nested = '{"meta": {"x": 1}, "diagram": 2}\n{"nodes": [], "edges": []}'
+    assert extract_diagram_json(nested) == {"nodes": [], "edges": []}
+    with pytest.raises(ValueError):
+        extract_diagram_json("## 1. Architecture Summary\nWould you like Bicep or Terraform?")

@@ -7,7 +7,9 @@
 ![IaC](https://img.shields.io/badge/IaC-Bicep%20%7C%20Terraform%20%7C%20ARM%20%7C%20CloudFormation-0078D4)
 ![Guardrails](https://img.shields.io/badge/guardrails-137%20controls-2E7D32)
 
-![The Liftoff workspace: a web app architecture on the canvas, with the service palette on the left and the properties panel on the right](docs/images/canvas.png)
+![Liftoff demo: an Azure and an AWS architecture generated from a prompt, a question answered from Microsoft Learn, and secure Bicep generated from the diagram](docs/images/demo.gif)
+
+<sub>A real run, sped up: prompt to diagram for Azure and AWS, a question about the design answered from Microsoft Learn, then modular Bicep with a guardrail report.</sub>
 
 Liftoff is an open-source architecture designer for **Azure and AWS**. Describe a system
 in plain English or draw it on a canvas, and Liftoff turns it into modular Bicep,
@@ -93,6 +95,29 @@ control and, where one exists, the built-in Azure Policy that audits it.
 
 ## Screenshots
 
+**Start from a sentence, on either cloud.** Pick Azure or AWS, describe the system, and
+Liftoff draws the diagram.
+
+![Create from Prompt dialog with the Azure/AWS choice](docs/images/prompt.png)
+
+![An AWS orders API generated from a prompt: API Gateway, Lambda, DynamoDB, SQS and S3](docs/images/aws-prompt.png)
+
+**Ask about the design.** The Architecture Advisor sees your diagram and answers from
+Microsoft Learn, with links to the pages it used.
+
+![Architecture Advisor answering how to make the diagram zone-redundant, with Microsoft Learn sources](docs/images/advisor.png)
+
+**Generate secure, modular code.** One click turns the diagram into Bicep modules (or
+Terraform, ARM, or CloudFormation for AWS), with the guardrail score alongside.
+
+![Generated Bicep project: file tree, main.bicep and a 100% guardrail score](docs/images/iac.png)
+
+**See exactly which controls are enforced.** Every template gets a compliance report
+mapped to the Microsoft Cloud Security Benchmark (or AWS Foundational Security Best
+Practices).
+
+![Security Guardrail Compliance report: 19 of 19 checkable controls enforced](docs/images/guardrails.png)
+
 **Properties come from Azure's own schema.** Select a resource and the panel shows its
 real properties (56 for a Web App), with required fields called out first.
 
@@ -103,16 +128,14 @@ recommended dependencies and offers the fix.
 
 ![Issues panel listing missing dependencies for an AKS architecture](docs/images/issues.png)
 
-**Start from a sentence.** Describe the architecture and Liftoff generates the diagram.
-
-![Create from Prompt dialog](docs/images/prompt.png)
-
-**AWS too.** Switch the palette to AWS, or import an AWS diagram, and the same canvas
-works with CloudFormation resource types, an AWS properties panel and AWS guardrails.
+**AWS on the same canvas.** CloudFormation resource types, an AWS properties panel and
+AWS guardrails.
 
 ![An AWS serverless API on the canvas with the CloudFormation properties panel](docs/images/aws-canvas.png)
 
-**The landing page.**
+**The workspace and the landing page.**
+
+![The Liftoff workspace: a web app architecture on the canvas](docs/images/canvas.png)
 
 ![Liftoff landing page](docs/images/landing.png)
 
@@ -245,8 +268,8 @@ Switch the palette to **AWS** first to generate AWS diagrams, for example:
 
 ## Enabling the AI features
 
-Diagram generation, IaC generation and the advisor are six specialised agents
-(orchestrator, IaC generator, AWS IaC generator, documentation, security advisor,
+Diagram generation, IaC generation and the advisor are seven specialised agents
+(diagram generator, orchestrator, IaC generator, AWS IaC generator, documentation, security advisor,
 validator). Each is a
 system prompt that runs on whichever chat model you configure. Copy
 `backend/.env.example` to `backend/.env`, set **one** of the options below, and restart
@@ -308,8 +331,8 @@ flowchart LR
 ```
 
 The frontend is React 19 with TypeScript, Vite, Tailwind and React Flow. The backend
-is FastAPI, with a plugin per cloud (`backend/app/csp/`). Six agents (orchestrator, IaC
-generator, AWS IaC generator, documentation, security advisor, validator) are system
+is FastAPI, with a plugin per cloud (`backend/app/csp/`). Seven agents (diagram generator,
+orchestrator, IaC generator, AWS IaC generator, documentation, security advisor, validator) are system
 prompts in `backend/app/agents/prompts.py`, run on the model you configure. The
 documentation agent is grounded in the Microsoft Learn MCP server
 (`backend/app/mcp/learn_mcp.py`), which Liftoff calls over MCP's Streamable HTTP

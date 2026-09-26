@@ -171,6 +171,8 @@ async function frame(browser, scene, caption, holdMs) {
 async function promptToDiagram(browser, cloud, prompt, scene, label, project) {
   console.log(`Scene: ${label}`);
   await browser.goto(`${BASE}/workspace?prompt=1&cloud=${cloud}`);
+  if (!(await browser.eval(`__lf.click('button[data-cloud="${cloud}"]')`))) throw new Error('cloud selector not found');
+  await sleep(200);
   await browser.eval(`__lf.type('input[placeholder="Enter project name"]', ${js(project)})`);
   const words = prompt.split(' ');
   const steps = 4;
@@ -184,7 +186,13 @@ async function promptToDiagram(browser, cloud, prompt, scene, label, project) {
   await sleep(1200);
   await frame(browser, scene, `${label} - generating`, 900);
   if (DRY) return;
-  await browser.waitFor(`__lf.count('.react-flow__node-service') > 0`, 240000, `${cloud} diagram`);
+  // Done when the dialog has closed (an error keeps it open) and the new tab shows services.
+  const closed = `!__lf.byText('h2', 'Create from Prompt')`;
+  await browser.waitFor(`${closed} || !!document.querySelector('.bg-red-50')`, 420000, `${cloud} diagram`);
+  if (!(await browser.eval(closed))) {
+    throw new Error(`Generation failed: ${await browser.eval(`document.querySelector('.bg-red-50').textContent`)}`);
+  }
+  await browser.waitFor(`__lf.count('.react-flow__node-service') > 0`, 30000, `${cloud} nodes rendered`);
   await sleep(2500); // let layout and icons settle
   await frame(browser, scene, `${label} - done`, 3200);
 }
@@ -197,6 +205,9 @@ async function askAdvisor(browser) {
   if (!(await browser.eval(`__lf.click('button, div[role="tab"], span', ${js(AZURE_PROJECT)})`))) {
     throw new Error('Azure project tab not found');
   }
+  await browser.waitFor(
+    `[...document.querySelectorAll('.react-flow__node-service')].some((n) => n.innerText.includes('Key Vault'))`,
+    15000, 'Azure diagram on screen');
   await sleep(1500);
   if (!(await browser.eval(`__lf.click('button[title="Open Azure Architect Chat"]')`))) throw new Error('chat button not found');
   await sleep(1200);
@@ -205,7 +216,7 @@ async function askAdvisor(browser) {
   await browser.eval(`(() => { const t = [...document.querySelectorAll('textarea[placeholder="Ask about Azure architecture..."]')].find((e) => __lf.visible(e)); t.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return true; })()`);
   await sleep(1500);
   await frame(browser, scene, `${label} - thinking`, 900);
-  await browser.waitFor(`document.body.innerText.includes('learn.microsoft.com')`, 240000, 'grounded answer with sources');
+  await browser.waitFor(`document.body.innerText.includes('learn.microsoft.com')`, 300000, 'grounded answer with sources');
   await sleep(1500);
   await frame(browser, scene, `${label} - answer with sources`, 4200);
   await browser.eval(`__lf.click('button[title="Close"]')`);
@@ -218,11 +229,11 @@ async function generateIaC(browser) {
   if (!(await browser.eval(`__lf.click('button', 'Generate IaC')`))) throw new Error('Generate IaC not found');
   await sleep(1500);
   await frame(browser, scene, label, 1200);
-  await browser.waitFor(`!!__lf.byText('button', 'Generate Bicep') && !__lf.byText('button', 'Generating')`, 240000, 'single-file generation');
+  await browser.waitFor(`!!__lf.byText('button', 'Generate Bicep') && !__lf.byText('button', 'Generating')`, 600000, 'single-file generation');
   await browser.eval(`__lf.click('button', 'Generate Bicep')`);
   await sleep(1500);
   await frame(browser, scene, `${label} - generating modules`, 900);
-  await browser.waitFor(`document.body.innerText.includes('main.bicep') && !__lf.byText('button', 'Generating')`, 300000, 'modular files');
+  await browser.waitFor(`document.body.innerText.includes('main.bicep') && !__lf.byText('button', 'Generating')`, 600000, 'modular files');
   await sleep(1500);
   await frame(browser, scene, `${label} - files and guardrail report`, 3600);
   if (await browser.eval(`__lf.click('button', 'View full report') || __lf.click('button', 'report')`)) {

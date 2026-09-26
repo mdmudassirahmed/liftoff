@@ -4,6 +4,7 @@ Agent API endpoints.
 REST API over the Liftoff agents (diagram generation, IaC generation, advisor
 chat) for Azure and AWS, running on the configured AI provider.
 """
+import json
 import time
 from typing import Optional, List, Dict, Any, Union
 from fastapi import APIRouter, HTTPException
@@ -531,6 +532,26 @@ Rules:
 9. Return ONLY the JSON object, no markdown code fences, no explanation.'''
 
 
+def extract_diagram_json(content: str) -> dict:
+    """The first JSON object in a model reply that has `nodes` and `edges`.
+
+    Models sometimes wrap the JSON in fences or add a sentence around it, so scan
+    for each '{' and decode from there rather than trusting the whole reply.
+    """
+    decoder = json.JSONDecoder()
+    text = content or ""
+    pos = text.find("{")
+    while pos != -1:
+        try:
+            obj, _ = decoder.raw_decode(text, pos)
+        except json.JSONDecodeError:
+            obj = None
+        if isinstance(obj, dict) and isinstance(obj.get("nodes"), list) and isinstance(obj.get("edges"), list):
+            return obj
+        pos = text.find("{", pos + 1)
+    raise ValueError("The model did not return a diagram (JSON with 'nodes' and 'edges'). Try again or use a stronger model.")
+
+
 @router.post("/diagram/generate", response_model=DiagramFromPromptResponse)
 async def generate_diagram_from_prompt(request: DiagramFromPromptRequest):
     """
@@ -548,49 +569,12 @@ async def generate_diagram_from_prompt(request: DiagramFromPromptRequest):
         schema = AWS_DIAGRAM_JSON_SCHEMA if csp == "aws" else DIAGRAM_JSON_SCHEMA
         full_prompt = f"{schema}\n\nUser request:\n{request.prompt}"
         
-        # Call the iac_generator agent
         response = await AgentRegistry.chat(
-            agent_type=AgentType.IAC_GENERATOR,
+            agent_type=AgentType.DIAGRAM_GENERATOR,
             message=full_prompt,
             context=None
         )
-        
-        # Extract JSON from response
-        import re
-        import json
-        
-        content = response.content.strip()
-        
-        # Remove markdown code fences if present
-        if content.startswith("```"):
-            # Find the end of the code block
-            lines = content.split("\n")
-            json_lines = []
-            in_block = False
-            for line in lines:
-                if line.startswith("```") and not in_block:
-                    in_block = True
-                    continue
-                elif line.startswith("```") and in_block:
-                    break
-                elif in_block:
-                    json_lines.append(line)
-            content = "\n".join(json_lines)
-        
-        # Try to parse as JSON
-        try:
-            diagram = json.loads(content)
-        except json.JSONDecodeError:
-            # Try to extract JSON object from the content
-            json_match = re.search(r'\{[\s\S]*\}', content)
-            if json_match:
-                diagram = json.loads(json_match.group())
-            else:
-                raise ValueError("Could not parse diagram JSON from agent response")
-        
-        # Validate basic structure
-        if "nodes" not in diagram or "edges" not in diagram:
-            raise ValueError("Diagram must contain 'nodes' and 'edges' arrays")
+        diagram = extract_diagram_json(response.content)
         
         elapsed_ms = (time.perf_counter() - start_time) * 1000
         

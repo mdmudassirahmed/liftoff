@@ -14,7 +14,7 @@ provider uses). Authentication is keyless through DefaultAzureCredential, so run
 
 Usage (from backend/):
 
-    python scripts/foundry_agents.py create              # create or update all six agents
+    python scripts/foundry_agents.py create              # create or update all seven agents
     python scripts/foundry_agents.py create --dry-run    # show what would be created
     python scripts/foundry_agents.py list
     python scripts/foundry_agents.py chat azure_docs "Which App Service tier supports VNet integration?"
