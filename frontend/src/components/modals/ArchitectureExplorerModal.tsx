@@ -22,7 +22,7 @@ const TABS: { id: TabId; label: string; icon: string }[] = [
 
 // Display-only labels for the explorer. The real endpoint lives in backend/.env.
 const AI_MODEL = 'gpt-4.1';
-const FOUNDRY_ENDPOINT = 'your Azure AI Foundry project';
+const FOUNDRY_ENDPOINT = 'OpenAI, Azure OpenAI, a local model or Azure AI Foundry';
 
 // User Flow Steps for IaC Generation
 const IAC_FLOW_STEPS = [
@@ -224,7 +224,7 @@ const TECH_STACK = {
     { name: 'Uvicorn', version: '0.27+', icon: 'mdi:server' },
   ],
   azure: [
-    { name: 'Azure AI Foundry', version: 'Preview', icon: 'mdi:microsoft-azure' },
+    { name: 'AI model (OpenAI-compatible or Azure)', version: 'configurable', icon: 'mdi:robot-outline' },
     { name: 'MCP Microsoft Learn', version: '1.0', icon: 'mdi:book-open-variant' },
     { name: 'Code Interpreter', version: 'Built-in', icon: 'mdi:code-braces' },
     { name: AI_MODEL, version: 'OpenAI', icon: 'mdi:robot' },
@@ -421,8 +421,8 @@ export function ArchitectureExplorerModal({ isOpen, onClose }: ArchitectureExplo
               {/* Header with Foundry Info */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">Azure AI Foundry Agents</h3>
-                  <p className="text-sm text-gray-500">Powered by {AI_MODEL} • {FOUNDRY_ENDPOINT}</p>
+                  <h3 className="text-base font-semibold text-gray-900">AI Agents</h3>
+                  <p className="text-sm text-gray-500">Run on the model you configure ({AI_MODEL} by default) via {FOUNDRY_ENDPOINT}</p>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-primary/10 rounded-lg">
                   <Icon icon="mdi:check-circle" className="w-4 h-4 text-brand-primary" />
@@ -648,7 +648,7 @@ export function ArchitectureExplorerModal({ isOpen, onClose }: ArchitectureExplo
                       <div className="w-16 h-16 mx-auto rounded-xl bg-brand-accent/10 border-2 border-brand-accent/30 flex items-center justify-center mb-2">
                         <Icon icon="mdi:microsoft-azure" className="w-8 h-8 text-brand-accent" />
                       </div>
-                      <span className="text-xs font-medium text-gray-600">AI Foundry</span>
+                      <span className="text-xs font-medium text-gray-600">AI model</span>
                     </div>
                   </div>
                 </div>

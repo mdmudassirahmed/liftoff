@@ -19,6 +19,7 @@ from app.core.security import RequestGuardMiddleware
 from app.api.routes import api_router
 from app.deps import cleanup_mcp_tools
 from app.agents.foundry import AgentRegistry
+from app.agents.providers import resolve_provider_kind
 
 settings = get_settings()
 setup_logging(level=settings.LOG_LEVEL)
@@ -29,17 +30,17 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifecycle management for connections and agents."""
     logger.info(f"Starting Liftoff backend v{__version__}")
-    if settings.AZURE_AI_PROJECT_ENDPOINT:
-        logger.info("Initializing Azure AI Foundry agents...")
+    if resolve_provider_kind() != "none":
+        logger.info("Initializing AI agents...")
         try:
             await AgentRegistry.initialize()
         except Exception as e:  # noqa: BLE001 - AI is optional at startup
             logger.warning(f"Agent initialization deferred: {e}")
     else:
         logger.warning(
-            "AZURE_AI_PROJECT_ENDPOINT is not set - AI features (prompt-to-diagram, "
-            "IaC generation, advisor chat) are disabled. Canvas, validation, "
-            "What-If and deploy still work."
+            "No AI provider configured - AI features (prompt-to-diagram, IaC generation, "
+            "advisor chat) are disabled. Canvas, validation, What-If and deploy still work. "
+            "Set OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT or AZURE_AI_PROJECT_ENDPOINT in backend/.env."
         )
 
     yield
@@ -97,7 +98,8 @@ async def root():
         "version": __version__,
         "docs": "/docs",
         "health": "/api/health",
-        "ai_configured": bool(settings.AZURE_AI_PROJECT_ENDPOINT),
+        "ai_configured": resolve_provider_kind() != "none",
+        "ai_provider": resolve_provider_kind(),
     }
 
 

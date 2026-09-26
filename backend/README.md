@@ -1,8 +1,9 @@
 # Liftoff backend
 
-FastAPI service behind the Liftoff canvas. It calls Azure AI Foundry agents to turn
-diagrams into IaC, checks the output against security guardrails, and runs
-What-If and deployments with the Azure CLI. See the [root README](../README.md)
+FastAPI service behind the Liftoff canvas. It runs five agents (system prompts in
+`app/agents/prompts.py`) on the chat model you configure to turn diagrams into IaC,
+checks the output against security guardrails, and runs What-If and deployments with
+the Azure CLI. See the [root README](../README.md)
 for the full picture.
 
 ## Run
@@ -26,14 +27,20 @@ variables or `backend/.env`. See [`.env.example`](.env.example) for the full lis
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `AZURE_AI_PROJECT_ENDPOINT` | *(empty)* | Your Foundry project. Empty = AI features off (API returns 503 with guidance) |
+| `AI_PROVIDER` | `auto` | `openai`, `azure-openai`, `foundry` or `none`; `auto` picks the first configured option below |
+| `AI_MODEL` | `gpt-4.1` | Model name for OpenAI-compatible providers (and the Azure OpenAI deployment fallback) |
+| `OPENAI_API_KEY`, `OPENAI_BASE_URL` | *(empty)* | OpenAI, or any OpenAI-compatible server (Ollama: `http://localhost:11434/v1`) |
+| `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_KEY` | *(empty)* | Azure OpenAI; keyless through `az login` unless the key is set |
+| `AZURE_AI_PROJECT_ENDPOINT` | *(empty)* | Azure AI Foundry project hosting the agents created by `agents/create_agents.py` |
 | `CORS_ORIGINS` | localhost:5173 / 4173 | Browser origins allowed to call the API |
 | `ALLOWED_HOSTS` | localhost, 127.0.0.1 | Host-header allow-list (DNS-rebinding protection) |
 | `API_AUTH_TOKEN` | *(empty)* | Require `Authorization: Bearer <token>` on `/api/*` |
 | `GUARDRAILS_ENABLED` | `true` | Inject security guardrails into prompts and return a compliance report |
 | `IAC_REFERENCE_EXISTING_NETWORKS` | `false` | Landing-zone mode: reference existing VNets instead of creating them |
 
-There are no API keys anywhere: Foundry is reached with `DefaultAzureCredential`.
+With no provider configured the AI endpoints return HTTP 503 with guidance and
+everything else works. Azure providers are reached keylessly with
+`DefaultAzureCredential` unless you set a key.
 
 ## API
 

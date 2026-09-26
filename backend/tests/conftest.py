@@ -9,7 +9,11 @@ BACKEND = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND))
 
 # Deterministic settings regardless of a developer's local backend/.env.
+os.environ["AI_PROVIDER"] = "auto"
 os.environ["AZURE_AI_PROJECT_ENDPOINT"] = ""
+os.environ["AZURE_OPENAI_ENDPOINT"] = ""
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["OPENAI_BASE_URL"] = ""
 os.environ["API_AUTH_TOKEN"] = ""
 os.environ["GUARDRAILS_ENABLED"] = "true"
 os.environ["IAC_REFERENCE_EXISTING_NETWORKS"] = "false"

@@ -5,6 +5,7 @@ from app import __version__
 from app.core.config import get_settings
 from app.deps import check_mcp_availability
 from app.agents.foundry import AgentRegistry
+from app.agents.providers import resolve_provider_kind
 import logging
 
 router = APIRouter()
@@ -29,7 +30,8 @@ async def readiness_check():
     """
     checks = {
         "api": True,
-        "ai_foundry_configured": bool(settings.AZURE_AI_PROJECT_ENDPOINT),
+        "ai_configured": resolve_provider_kind() != "none",
+        "ai_provider": resolve_provider_kind(),
     }
     
     # Check MCP availability

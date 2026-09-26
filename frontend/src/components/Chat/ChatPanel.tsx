@@ -221,7 +221,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       console.error('Chat error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `Sorry, I encountered an error. ${useFoundryAgents ? 'Please ensure Azure AI Foundry agents are configured correctly.' : `Please ensure the backend is running at ${BACKEND_URL}.`}\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        content: `Sorry, I encountered an error. ${useFoundryAgents ? 'Check that an AI provider is configured in backend/.env (OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT or AZURE_AI_PROJECT_ENDPOINT).' : `Please ensure the backend is running at ${BACKEND_URL}.`}\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date()
       }]);
     } finally {

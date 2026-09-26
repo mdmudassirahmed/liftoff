@@ -21,6 +21,22 @@ class Settings(BaseSettings):
         case_sensitive=True,
     )
 
+    # --- AI provider (see app/agents/providers.py) -----------------------------
+    # auto | openai | azure-openai | foundry | none. `auto` picks the first configured below.
+    AI_PROVIDER: str = "auto"
+    # Model name (OpenAI-compatible providers) and the Azure OpenAI deployment fallback.
+    AI_MODEL: str = "gpt-4.1"
+
+    # OpenAI, or any OpenAI-compatible server (Ollama: OPENAI_BASE_URL=http://localhost:11434/v1).
+    OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = ""
+
+    # Azure OpenAI. Keyless via DefaultAzureCredential unless AZURE_OPENAI_API_KEY is set.
+    AZURE_OPENAI_ENDPOINT: str = ""
+    AZURE_OPENAI_API_KEY: str = ""
+    AZURE_OPENAI_DEPLOYMENT: str = ""
+    AZURE_OPENAI_API_VERSION: str = "2024-10-21"
+
     # Azure AI Foundry project that hosts the agents (created by agents/create_agents.py).
     # Authentication is keyless: DefaultAzureCredential (az login, managed identity, ...).
     AZURE_AI_PROJECT_ENDPOINT: str = ""

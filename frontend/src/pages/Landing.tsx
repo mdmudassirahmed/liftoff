@@ -126,14 +126,14 @@ export function IndexPage() {
                     <Icon icon="mdi:robot" className="w-4 h-4" />
                     Live Agent Fabric
                   </div>
-                  <h3 className="text-base font-semibold text-gray-900">Azure AI Foundry Agents in Use</h3>
+                  <h3 className="text-base font-semibold text-gray-900">AI Agents in Use</h3>
                   <p className="text-sm text-gray-600">
-                    These are autonomous agents (not UI features), hosted in Azure AI Foundry and consumed by the app.
+                    Five specialised agents run on the model you configure: OpenAI, Azure OpenAI, a local model, or Azure AI Foundry.
                   </p>
                 </div>
                 <div className="inline-flex items-center gap-2 text-xs font-medium text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-3 py-1 rounded-full">
                   <Icon icon="mdi:cloud-check" className="w-4 h-4" />
-                  Azure AI Foundry Hosted
+                  Bring your own model
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-left">
@@ -210,7 +210,7 @@ export function IndexPage() {
                 <div className="rounded-xl border border-gray-200 bg-white p-3">
                   <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Backend</div>
                   <div className="text-xs text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis">
-                    FastAPI • Azure AI Foundry • Azure MCP
+                    FastAPI • Your choice of AI model • Azure CLI
                   </div>
                 </div>
               </div>

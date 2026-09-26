@@ -14,7 +14,9 @@ English or draw it on a canvas, and Liftoff turns it into modular Bicep or Terra
 that is **hardened against 106 security controls, compiled before you see it, and
 previewed with Azure What-If before anything touches your subscription.**
 
-It runs on your machine, uses your own Azure sign-in, and needs no API keys.
+It runs on your machine, deploys with your own Azure sign-in, and works with the model
+you already have: OpenAI, Azure OpenAI, a local model through Ollama or LM Studio, or
+Azure AI Foundry.
 
 [Quick start](#quick-start) &nbsp;|&nbsp; [First session](#a-first-session) &nbsp;|&nbsp; [How it works](#how-it-works) &nbsp;|&nbsp; [FAQ](#faq) &nbsp;|&nbsp; [Contributing](CONTRIBUTING.md)
 
@@ -181,7 +183,7 @@ No configuration is required to start.
 | Schema-driven property editor | Internet access (public Bicep type definitions) |
 | Dependency validation and the Issues panel | None |
 | Saving to the browser and exporting diagram JSON | None |
-| Prompt to diagram, IaC generation, guardrail report, advisor chat | An Azure AI Foundry project ([setup](#enabling-the-ai-features)) |
+| Prompt to diagram, IaC generation, guardrail report, advisor chat | Any chat model: an OpenAI key, Azure OpenAI, a local model, or Azure AI Foundry ([setup](#enabling-the-ai-features)) |
 | What-If preview and deployment | Azure CLI signed in with `az login` |
 
 ## A first session
@@ -223,33 +225,27 @@ To start from a sentence instead, choose **+** then **Create from Prompt** and t
 
 ## Enabling the AI features
 
-Diagram generation, IaC generation and the advisor run on five agents in your own
-[Azure AI Foundry](https://ai.azure.com) project. There are no API keys to manage:
-the backend and the setup scripts authenticate with your Azure CLI sign-in.
+Diagram generation, IaC generation and the advisor are five specialised agents
+(orchestrator, IaC generator, documentation, security advisor, validator). Each is a
+system prompt that runs on whichever chat model you configure. Copy
+`backend/.env.example` to `backend/.env`, set **one** of the options below, and restart
+the backend.
 
-1. In Azure AI Foundry, create a project and deploy a chat model such as `gpt-4.1`.
-2. Create the agents once:
+| Provider | Settings in `backend/.env` |
+|----------|----------------------------|
+| **OpenAI** | `OPENAI_API_KEY=sk-...` and optionally `AI_MODEL=gpt-4.1` |
+| **Local model** (Ollama, LM Studio, vLLM, any OpenAI-compatible server) | `OPENAI_BASE_URL=http://localhost:11434/v1` and `AI_MODEL=llama3.1` (Ollama example) |
+| **Azure OpenAI** | `AZURE_OPENAI_ENDPOINT=https://<resource>.openai.azure.com/` and `AZURE_OPENAI_DEPLOYMENT=<deployment>`. Keyless through `az login`, or set `AZURE_OPENAI_API_KEY` |
+| **Azure AI Foundry agents** | `AZURE_AI_PROJECT_ENDPOINT=...` after creating the agents once with `agents/create_agents.py` (keyless through `az login`) |
 
-   ```bash
-   az login
-   cd agents
-   pip install -r requirements.txt
-   cp .env.example .env     # set AZURE_AI_PROJECT_ENDPOINT and AZURE_AI_MODEL_DEPLOYMENT_NAME
-   python create_agents.py
-   ```
+`AI_PROVIDER=auto` (the default) uses the first option that is set; set it to `openai`,
+`azure-openai` or `foundry` to choose explicitly. Until a provider is configured, AI
+endpoints return HTTP 503 with instructions and the rest of the application keeps
+working.
 
-3. Point the backend at the same project:
-
-   ```bash
-   cd ../backend
-   cp .env.example .env     # set AZURE_AI_PROJECT_ENDPOINT
-   ```
-
-4. Restart the backend. The startup log stops warning that AI features are disabled.
-
-Your account needs the Azure AI User role (or higher) on the project. Until this is
-configured, AI endpoints return HTTP 503 with instructions and the rest of the
-application keeps working.
+Generation quality depends on the model. The Bicep compile-and-correct loop and the
+deterministic guardrail checks apply to every provider, so weaker models still produce
+templates that compile and are verified; they may just need more correction rounds.
 
 ## How it works
 
@@ -268,9 +264,11 @@ flowchart LR
         Deploy[What-If and deploy]
     end
 
+    subgraph Model["Your AI provider"]
+        LLM[OpenAI · Azure OpenAI · local model · Azure AI Foundry]
+    end
+
     subgraph Azure
-        Foundry[Azure AI Foundry agents]
-        Learn[Microsoft Learn MCP]
         ARM[Azure Resource Manager]
     end
 
@@ -278,16 +276,16 @@ flowchart LR
 
     Canvas --> Guard
     Props -. live schemas .-> BicepTypes
-    Guard --> Rails --> Foundry
-    Foundry --> Learn
-    Foundry --> Fix --> Preview
+    Guard --> Rails --> LLM
+    LLM --> Fix --> Preview
     Preview --> Deploy -->|az CLI| ARM
 ```
 
 The frontend is React 19 with TypeScript, Vite, Tailwind and React Flow. The backend
-is FastAPI. Five agents run in Azure AI Foundry: an orchestrator, an IaC generator,
-a documentation agent connected to the Microsoft Learn MCP server, a security
-advisor and a validator.
+is FastAPI. Five agents (orchestrator, IaC generator, documentation, security advisor,
+validator) are system prompts in `backend/app/agents/prompts.py`, run on the model you
+configure. On Azure AI Foundry the same prompts are installed as hosted agents, where
+the documentation agent additionally uses the Microsoft Learn MCP server.
 
 ## Configuration
 
@@ -295,7 +293,7 @@ Every setting has a safe default.
 
 | File | Settings |
 |------|----------|
-| `backend/.env` ([example](backend/.env.example)) | `AZURE_AI_PROJECT_ENDPOINT`, `CORS_ORIGINS`, `ALLOWED_HOSTS`, `API_AUTH_TOKEN`, `GUARDRAILS_ENABLED`, `IAC_REFERENCE_EXISTING_NETWORKS` |
+| `backend/.env` ([example](backend/.env.example)) | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `AZURE_OPENAI_*`, `AZURE_AI_PROJECT_ENDPOINT`, `CORS_ORIGINS`, `ALLOWED_HOSTS`, `API_AUTH_TOKEN`, `GUARDRAILS_ENABLED`, `IAC_REFERENCE_EXISTING_NETWORKS` |
 | `frontend/.env.local` ([example](frontend/.env.example)) | `VITE_API_URL`, `VITE_API_TOKEN` |
 | `agents/.env` ([example](agents/.env.example)) | `AZURE_AI_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME` |
 
@@ -326,9 +324,10 @@ Microsoft Learn. There is no telemetry.
 **Does it support AWS or Google Cloud?** Not today. The guardrail engine and catalog
 are keyed by cloud provider, so adding one is a contained piece of work.
 
-**Can I use another model provider?** The backend talks to Azure AI Foundry agents,
-which can host models from several providers. Swapping in a different API means
-replacing `backend/app/agents/foundry/foundry_client.py`.
+**Which models can I use?** Anything with an OpenAI-compatible chat API: OpenAI,
+Azure OpenAI, local models through Ollama or LM Studio, hosted gateways such as
+OpenRouter, or Azure AI Foundry agents. Pick one in `backend/.env`. The agents are
+plain system prompts (`backend/app/agents/prompts.py`), so you can also tune them.
 
 **Can I trust the generated code blindly?** No. It is compiled, checked and previewed,
 which removes most of the usual failure modes, but review it like any other pull

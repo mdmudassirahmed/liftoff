@@ -16,6 +16,15 @@ from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 
+from app.agents.prompts import SYSTEM_PROMPTS
+from app.agents.providers import (
+    FOUNDRY,
+    NONE,
+    ChatProvider,
+    build_provider,
+    not_configured_message,
+    resolve_provider_kind,
+)
 from app.core.config import get_settings
 from app.core.logging import get_logger
 
@@ -355,6 +364,8 @@ class FoundryClient:
         self._project_client: Optional[AIProjectClient] = None
         self._openai_client = None
         self._credential: Optional[DefaultAzureCredential] = None
+        self._provider: Optional[ChatProvider] = None   # non-Foundry chat model
+        self._provider_error: Optional[str] = None
         self._agents_cache: Dict[str, Any] = {}
         self._initialized = False
     
@@ -369,10 +380,29 @@ class FoundryClient:
         return self._initialized and self._project_client is not None
     
     async def initialize(self) -> bool:
-        """Initialize the Foundry client."""
+        """Initialize the AI client: a chat provider, or the Foundry agent client."""
         if self._initialized:
             return True
-            
+
+        kind = resolve_provider_kind()
+        if kind == NONE:
+            logger.warning(not_configured_message())
+            return False
+        if kind != FOUNDRY:
+            try:
+                self._provider = build_provider()
+            except Exception as e:  # noqa: BLE001 - surfaced to the caller as 503
+                logger.error(f"AI provider setup failed: {e}")
+                self._provider_error = str(e)
+                return False
+            self._agents_cache = {
+                agent_type: {"name": name, "provider": self._provider.name, "model": self._provider.model}
+                for agent_type, name in AGENT_NAMES.items()
+            }
+            self._initialized = True
+            logger.info(f"AI ready | provider={self._provider.name} | model={self._provider.model}")
+            return True
+
         try:
             endpoint = self.project_endpoint
             if not endpoint:
@@ -444,12 +474,12 @@ class FoundryClient:
         """
         if not self._initialized:
             await self.initialize()
-        if not self._initialized or self._openai_client is None:
-            if not self.project_endpoint:
-                raise AgentsUnavailableError(
-                    "AI features are not configured. Set AZURE_AI_PROJECT_ENDPOINT in "
-                    "backend/.env and create the agents with agents/create_agents.py."
-                )
+        if not self._initialized or (self._provider is None and self._openai_client is None):
+            kind = resolve_provider_kind()
+            if kind == NONE:
+                raise AgentsUnavailableError(not_configured_message())
+            if self._provider_error:
+                raise AgentsUnavailableError(f"AI provider setup failed: {self._provider_error}")
             raise AgentsUnavailableError(
                 "Could not connect to Azure AI Foundry. Check AZURE_AI_PROJECT_ENDPOINT "
                 "and that you are signed in (az login) with access to the project."
@@ -485,18 +515,20 @@ class FoundryClient:
             
             logger.info(f"Calling agent: {agent_name} | message_length={len(full_message)} | has_context={context is not None}")
             
-            # Call agent via Responses API (sync, run in executor)
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self._openai_client.responses.create(
-                    input=[{"role": "user", "content": full_message}],
-                    extra_body={"agent": {"name": agent_name, "type": "agent_reference"}},
+            if self._provider is not None:
+                # Chat-completions provider: the agent is its system prompt.
+                output_text = await self._provider.complete(SYSTEM_PROMPTS[agent_type], full_message)
+            else:
+                # Foundry: call the published agent via the Responses API (sync, run in executor)
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: self._openai_client.responses.create(
+                        input=[{"role": "user", "content": full_message}],
+                        extra_body={"agent": {"name": agent_name, "type": "agent_reference"}},
+                    )
                 )
-            )
-            
-            # Extract response text
-            output_text = getattr(response, 'output_text', str(response))
+                output_text = getattr(response, 'output_text', str(response))
             
             logger.info(f"Agent response | agent={agent_name} | response_length={len(output_text)}")
             
