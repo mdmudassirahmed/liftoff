@@ -91,7 +91,13 @@ export function PromptDiagramModal({
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe your architecture in plain English, for example:\n\n• Build a web app in eastus with App Service, Key Vault, and Storage Account\n• Create a microservices architecture with API Management and 3 Container Apps\n• Set up a data pipeline with Event Hub, Stream Analytics, and Cosmos DB"
+              placeholder={[
+                'Describe your architecture in plain English, for example:',
+                '',
+                '- A web app in eastus with App Service, Key Vault and a Storage Account',
+                '- A microservices architecture with API Management and 3 Container Apps',
+                '- A data pipeline with Event Hubs, Stream Analytics and Cosmos DB',
+              ].join('\n')}
               rows={8}
               className={cn(
                 'w-full px-3 py-2 border rounded-lg text-sm',

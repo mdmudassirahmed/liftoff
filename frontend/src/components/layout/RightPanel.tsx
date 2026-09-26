@@ -12,7 +12,10 @@ import { useAzureAccount } from '@/hooks';
 type TabType = 'properties' | 'issues';
 
 export function RightPanel() {
-  const [activeTab, setActiveTab] = useState<TabType>('properties');
+  // /workspace?panel=issues opens the Issues tab directly (used by README deep links).
+  const [activeTab, setActiveTab] = useState<TabType>(() =>
+    new URLSearchParams(window.location.search).get('panel') === 'issues' ? 'issues' : 'properties'
+  );
   const nodes = useDiagramStore((state) => state.nodes);
   
   // Get validation results for badge count

@@ -14,6 +14,7 @@ import { PromptDiagramModal } from '@/components/modals/PromptDiagramModal';
 import { ChatContainer } from '@/components/Chat';
 import { useDiagramStore } from '@/store/diagramStore';
 import { useTabsStore } from '@/store/tabsStore';
+import { getExample } from '@/lib/examples';
 import agentsService from '@/services/agentsService';
 import { api } from '@/services/api';
 
@@ -154,7 +155,9 @@ export function AppShell() {
   
   // Initialize tabs on first load
   useEffect(() => {
-    if (tabs.length === 0) {
+    // Read the live store: React StrictMode runs this effect twice on mount and the
+    // closure's `tabs.length` would still be 0 the second time.
+    if (useTabsStore.getState().tabs.length === 0) {
       // Create initial tab
       const newTabId = createTab('My Project');
       setCurrentTabId(newTabId);
@@ -572,6 +575,29 @@ export function AppShell() {
       });
     }
   }, [isAuthModalOpen, refreshAzureAuth]);
+
+  // Deep links, e.g. /workspace?example=web-app-sql&select=web or /workspace?prompt=1.
+  // Handled once per page load (the ref guards StrictMode's double invocation).
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    deepLinkHandled.current = true;
+    const params = new URLSearchParams(window.location.search);
+    const exampleName = params.get('example');
+    if (exampleName) {
+      const example = getExample(exampleName);
+      if (example) {
+        handleImportDiagram(example.diagram, example.title);
+        const select = params.get('select');
+        if (select) {
+          setTimeout(() => useDiagramStore.getState().selectNode(select), 250);
+        }
+      } else {
+        console.warn(`Unknown example "${exampleName}"`);
+      }
+    }
+    if (params.get('prompt') === '1') setIsPromptModalOpen(true);
+  }, [handleImportDiagram]);
 
   return (
     <ReactFlowProvider>

@@ -19,6 +19,10 @@ export default defineConfig({
     // Loopback only by default. Use `npm run dev -- --host` to expose on your LAN
     // (then add that origin to CORS_ORIGINS in backend/.env).
     host: 'localhost',
+    // The bundled examples live in ../examples (outside the frontend root).
+    fs: {
+      allow: [path.resolve(__dirname), path.resolve(__dirname, '..')],
+    },
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8000',

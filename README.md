@@ -7,7 +7,7 @@
 ![Bicep](https://img.shields.io/badge/IaC-Bicep%20%7C%20Terraform%20%7C%20ARM-0078D4)
 ![Guardrails](https://img.shields.io/badge/guardrails-106%20controls-2E7D32)
 
-![Liftoff workflow: describe, design, generate, deploy](docs/images/overview.svg)
+![The Liftoff workspace: a web app architecture on the canvas, with the service palette on the left and the properties panel on the right](docs/images/canvas.png)
 
 Liftoff is an open-source architecture designer for Azure. Describe a system in plain
 English or draw it on a canvas, and Liftoff turns it into modular Bicep or Terraform
@@ -89,6 +89,30 @@ and a compliance report alongside it:
 Every control maps to a [Microsoft Cloud Security Benchmark](https://learn.microsoft.com/security/benchmark/azure/)
 control and, where one exists, the built-in Azure Policy that audits it.
 
+## Screenshots
+
+**Properties come from Azure's own schema.** Select a resource and the panel shows its
+real properties (56 for a Web App), with required fields called out first.
+
+![Properties panel showing the Web App's schema-driven properties](docs/images/properties.png)
+
+**Problems surface while you design.** The Issues panel flags missing required and
+recommended dependencies and offers the fix.
+
+![Issues panel listing missing dependencies for an AKS architecture](docs/images/issues.png)
+
+**Start from a sentence.** Describe the architecture and Liftoff generates the diagram.
+
+![Create from Prompt dialog](docs/images/prompt.png)
+
+**The landing page.**
+
+![Liftoff landing page](docs/images/landing.png)
+
+The whole flow at a glance:
+
+![Liftoff workflow: describe, design, generate, deploy](docs/images/overview.svg)
+
 ## Features
 
 - **Prompt to diagram.** "A Python web app with a private SQL database, Key Vault and
@@ -163,7 +187,15 @@ No configuration is required to start.
 ## A first session
 
 1. On the landing page choose **Get Started** to open the workspace.
-2. Click **+** next to the tabs, choose **Import from JSON**, and load one of the examples:
+2. Load an example. The quickest way is a deep link, which opens the example directly:
+
+   - http://localhost:5173/workspace?example=web-app-sql
+   - http://localhost:5173/workspace?example=serverless-ai
+   - http://localhost:5173/workspace?example=aks-microservices
+
+   Add `&select=web` to open a resource's properties, or `&panel=issues` to open the
+   Issues panel. You can also click **+** next to the tabs, choose **Import from JSON**,
+   and load a file from `examples/`:
 
    | File | Architecture |
    |------|--------------|
