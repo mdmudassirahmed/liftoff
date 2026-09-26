@@ -1,6 +1,7 @@
 // Top Bar Component
 
 import { useState, useEffect, useRef } from 'react';
+import { toPng } from 'html-to-image';
 import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { cn } from '@/lib/utils';
@@ -101,6 +102,44 @@ export function TopBar({
     setShowSaveMenu(false);
   };
 
+  // Export diagram as PNG
+const handleExportAsPng = async () => {
+  const diagramElement = document.querySelector(
+    '.react-flow'
+  ) as HTMLElement;
+
+  if (!diagramElement) {
+    setSaveMessage('Diagram canvas not found!');
+    setTimeout(() => setSaveMessage(null), 2000);
+    return;
+  }
+
+  try {
+    const dataUrl = await toPng(diagramElement, {
+      backgroundColor: '#ffffff',
+      pixelRatio: 2,
+    });
+
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `${(activeTab?.name || 'architecture')
+      .replace(/\s+/g, '-')
+      .toLowerCase()}-${new Date().toISOString().split('T')[0]}.png`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setSaveMessage('Exported as PNG!');
+    setTimeout(() => setSaveMessage(null), 2000);
+    setShowSaveMenu(false);
+  } catch (error) {
+    console.error('Failed to export diagram as PNG:', error);
+    setSaveMessage('Failed to export PNG');
+    setTimeout(() => setSaveMessage(null), 2000);
+  }
+};
+
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm">
       {/* Left: Logo and Title - Links to Home */}
@@ -179,6 +218,26 @@ export function TopBar({
                     <div className="text-xs text-gray-500">Export as JSON file</div>
                   </div>
                 </button>
+
+                <button
+  onClick={handleExportAsPng}
+  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-100 rounded-md"
+>
+  <Icon
+    icon="mdi:image-outline"
+    className="w-4 h-4 text-brand-primary"
+  />
+
+  <div>
+    <div className="font-medium">
+      Export as PNG
+    </div>
+
+    <div className="text-xs text-gray-500">
+      Export diagram as PNG image
+    </div>
+  </div>
+</button>
               </div>
               <div className="border-t border-gray-200 px-3 py-2 bg-gray-50 rounded-b-lg">
                 <p className="text-xs text-gray-500">
