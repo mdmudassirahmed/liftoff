@@ -1,0 +1,220 @@
+{
+  "nodes": [
+    {
+      "id": "region-1",
+      "type": "azure.group",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "title": "eastus",
+        "label": "eastus",
+        "groupType": "region",
+        "region": "eastus"
+      }
+    },
+    {
+      "id": "sub-1",
+      "type": "azure.group",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "parentId": "region-1",
+      "extent": "parent",
+      "data": {
+        "title": "Subscription",
+        "label": "subscription",
+        "groupType": "subscription",
+        "region": "eastus"
+      }
+    },
+    {
+      "id": "rg-1",
+      "type": "azure.group",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "parentId": "sub-1",
+      "extent": "parent",
+      "data": {
+        "title": "rg-webapp-dev",
+        "label": "rg-webapp-dev",
+        "groupType": "resourceGroup",
+        "region": "eastus"
+      }
+    },
+    {
+      "id": "plan",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "App Service Plan",
+        "label": "plan",
+        "resourceType": "Microsoft.Web/serverfarms",
+        "region": "eastus",
+        "resourceGroup": "rg-webapp-dev",
+        "properties": {
+          "sku": "P1v3",
+          "os": "Linux"
+        }
+      }
+    },
+    {
+      "id": "web",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Web App",
+        "label": "web",
+        "resourceType": "Microsoft.Web/sites",
+        "region": "eastus",
+        "resourceGroup": "rg-webapp-dev",
+        "properties": {
+          "runtime": "PYTHON|3.12",
+          "httpsOnly": true
+        }
+      }
+    },
+    {
+      "id": "sql",
+      "type": "azure.service",
+      "position": {
+        "x": 560,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Azure SQL",
+        "label": "sql",
+        "resourceType": "Microsoft.Sql/servers",
+        "region": "eastus",
+        "resourceGroup": "rg-webapp-dev",
+        "properties": {
+          "database": "appdb",
+          "sku": "S0"
+        }
+      }
+    },
+    {
+      "id": "kv",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Key Vault",
+        "label": "kv",
+        "resourceType": "Microsoft.KeyVault/vaults",
+        "region": "eastus",
+        "resourceGroup": "rg-webapp-dev",
+        "properties": {
+          "sku": "standard"
+        }
+      }
+    },
+    {
+      "id": "appi",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Application Insights",
+        "label": "appi",
+        "resourceType": "Microsoft.Insights/components",
+        "region": "eastus",
+        "resourceGroup": "rg-webapp-dev",
+        "properties": {
+          "kind": "web"
+        }
+      }
+    },
+    {
+      "id": "st",
+      "type": "azure.service",
+      "position": {
+        "x": 560,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Storage Account",
+        "label": "st",
+        "resourceType": "Microsoft.Storage/storageAccounts",
+        "region": "eastus",
+        "resourceGroup": "rg-webapp-dev",
+        "properties": {
+          "sku": "Standard_LRS"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "web",
+      "target": "plan",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "web",
+      "target": "sql",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "web",
+      "target": "kv",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "web",
+      "target": "appi",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "web",
+      "target": "st",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    }
+  ]
+}

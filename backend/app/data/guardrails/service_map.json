@@ -1,0 +1,253 @@
+{
+  "_comment": "Maps catalog service names to Azure resource types (the node data.resourceType join key) and a scope. scope='resource' guardrails attach to matching diagram nodes; scope='environment' guardrails are subscription/identity-level and are surfaced in a separate advisory group. Resource types are matched case-insensitively in app/services/guardrails.py. Several services intentionally share a resource type (e.g. App Service + Function App -> Microsoft.Web/sites); the matcher unions their guardrails and dedupes by control_id.",
+  "AZURE": {
+    "Function App": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Web/sites"
+      ]
+    },
+    "App Service": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Web/sites",
+        "Microsoft.Web/serverfarms"
+      ]
+    },
+    "Storage Account": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Storage/storageAccounts"
+      ]
+    },
+    "Virtual Machine": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Compute/virtualMachines"
+      ]
+    },
+    "Kubernetes Services": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.ContainerService/managedClusters"
+      ]
+    },
+    "Key Vault": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.KeyVault/vaults"
+      ]
+    },
+    "Network Security Group": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/networkSecurityGroups"
+      ]
+    },
+    "SQL Database": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Sql/servers",
+        "Microsoft.Sql/servers/databases"
+      ]
+    },
+    "Azure AI Foundry": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.CognitiveServices/accounts",
+        "Microsoft.MachineLearningServices/workspaces"
+      ]
+    },
+    "Virtual Network": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/virtualNetworks"
+      ]
+    },
+    "Machine Learning": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.MachineLearningServices/workspaces"
+      ]
+    },
+    "API Management": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.ApiManagement/service"
+      ]
+    },
+    "Cosmos DB": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.DocumentDB/databaseAccounts"
+      ]
+    },
+    "Database for MySQL Flexible Server": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.DBforMySQL/flexibleServers"
+      ]
+    },
+    "Database for PostgreSQL Flexible Server": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.DBforPostgreSQL/flexibleServers"
+      ]
+    },
+    "Disks": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Compute/disks"
+      ]
+    },
+    "AI Services": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.CognitiveServices/accounts"
+      ]
+    },
+    "Application Gateway": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/applicationGateways"
+      ]
+    },
+    "Batch Accounts": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Batch/batchAccounts"
+      ]
+    },
+    "Data Factory": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.DataFactory/factories"
+      ]
+    },
+    "Database for MySQL": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.DBforMySQL/servers"
+      ]
+    },
+    "Database for PostgreSQL": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.DBforPostgreSQL/servers"
+      ]
+    },
+    "Domain Name Service": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/dnsZones",
+        "Microsoft.Network/privateDnsZones"
+      ]
+    },
+    "SQL Managed Instance": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Sql/managedInstances"
+      ]
+    },
+    "Service Bus": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.ServiceBus/namespaces"
+      ]
+    },
+    "Virtual Machine Scale Set": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Compute/virtualMachineScaleSets"
+      ]
+    },
+    "Application Insights": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Insights/components"
+      ]
+    },
+    "Automation Accounts": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Automation/automationAccounts"
+      ]
+    },
+    "Cache for Redis": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Cache/redis",
+        "Microsoft.Cache/redisEnterprise"
+      ]
+    },
+    "Container Registry": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.ContainerRegistry/registries"
+      ]
+    },
+    "Databricks": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Databricks/workspaces"
+      ]
+    },
+    "Load Balancer": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/loadBalancers"
+      ]
+    },
+    "Logic Apps": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Logic/workflows"
+      ]
+    },
+    "Monitor": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Insights/diagnosticSettings",
+        "Microsoft.Insights/activityLogAlerts"
+      ]
+    },
+    "Network Interface": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/networkInterfaces"
+      ]
+    },
+    "OpenAI": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.CognitiveServices/accounts"
+      ]
+    },
+    "Public IP Address": {
+      "scope": "resource",
+      "azure_resource_types": [
+        "Microsoft.Network/publicIPAddresses"
+      ]
+    },
+    "Entra ID": {
+      "scope": "environment",
+      "azure_resource_types": []
+    },
+    "Subscription": {
+      "scope": "environment",
+      "azure_resource_types": []
+    },
+    "Identity and Access Management": {
+      "scope": "environment",
+      "azure_resource_types": []
+    },
+    "Defender for cloud": {
+      "scope": "environment",
+      "azure_resource_types": []
+    },
+    "Subscription Feature": {
+      "scope": "environment",
+      "azure_resource_types": []
+    }
+  }
+}

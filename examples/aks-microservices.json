@@ -1,0 +1,274 @@
+{
+  "nodes": [
+    {
+      "id": "region-1",
+      "type": "azure.group",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "title": "westeurope",
+        "label": "westeurope",
+        "groupType": "region",
+        "region": "westeurope"
+      }
+    },
+    {
+      "id": "sub-1",
+      "type": "azure.group",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "parentId": "region-1",
+      "extent": "parent",
+      "data": {
+        "title": "Subscription",
+        "label": "subscription",
+        "groupType": "subscription",
+        "region": "westeurope"
+      }
+    },
+    {
+      "id": "rg-1",
+      "type": "azure.group",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "parentId": "sub-1",
+      "extent": "parent",
+      "data": {
+        "title": "rg-aks-dev",
+        "label": "rg-aks-dev",
+        "groupType": "resourceGroup",
+        "region": "westeurope"
+      }
+    },
+    {
+      "id": "vnet",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Virtual Network",
+        "label": "vnet",
+        "resourceType": "Microsoft.Network/virtualNetworks",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "addressSpace": "10.0.0.0/16"
+        }
+      }
+    },
+    {
+      "id": "aks",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "AKS Cluster",
+        "label": "aks",
+        "resourceType": "Microsoft.ContainerService/managedClusters",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "nodeCount": 3,
+          "vmSize": "Standard_D4s_v5"
+        }
+      }
+    },
+    {
+      "id": "acr",
+      "type": "azure.service",
+      "position": {
+        "x": 560,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Container Registry",
+        "label": "acr",
+        "resourceType": "Microsoft.ContainerRegistry/registries",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "sku": "Premium"
+        }
+      }
+    },
+    {
+      "id": "agw",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Application Gateway",
+        "label": "agw",
+        "resourceType": "Microsoft.Network/applicationGateways",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "sku": "WAF_v2"
+        }
+      }
+    },
+    {
+      "id": "pg",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "PostgreSQL Flexible Server",
+        "label": "pg",
+        "resourceType": "Microsoft.DBforPostgreSQL/flexibleServers",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "version": "16"
+        }
+      }
+    },
+    {
+      "id": "redis",
+      "type": "azure.service",
+      "position": {
+        "x": 560,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Azure Cache for Redis",
+        "label": "redis",
+        "resourceType": "Microsoft.Cache/Redis",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "sku": "Standard"
+        }
+      }
+    },
+    {
+      "id": "kv",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 420
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Key Vault",
+        "label": "kv",
+        "resourceType": "Microsoft.KeyVault/vaults",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {
+          "sku": "standard"
+        }
+      }
+    },
+    {
+      "id": "id",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 420
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Workload Identity",
+        "label": "id",
+        "resourceType": "Microsoft.ManagedIdentity/userAssignedIdentities",
+        "region": "westeurope",
+        "resourceGroup": "rg-aks-dev",
+        "properties": {}
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "aks",
+      "target": "vnet",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "aks",
+      "target": "acr",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "agw",
+      "target": "aks",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "aks",
+      "target": "pg",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "aks",
+      "target": "redis",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "aks",
+      "target": "kv",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "aks",
+      "target": "id",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    }
+  ]
+}

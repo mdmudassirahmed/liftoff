@@ -1,0 +1,277 @@
+{
+  "nodes": [
+    {
+      "id": "region-1",
+      "type": "azure.group",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "data": {
+        "title": "eastus2",
+        "label": "eastus2",
+        "groupType": "region",
+        "region": "eastus2"
+      }
+    },
+    {
+      "id": "sub-1",
+      "type": "azure.group",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "parentId": "region-1",
+      "extent": "parent",
+      "data": {
+        "title": "Subscription",
+        "label": "subscription",
+        "groupType": "subscription",
+        "region": "eastus2"
+      }
+    },
+    {
+      "id": "rg-1",
+      "type": "azure.group",
+      "position": {
+        "x": 40,
+        "y": 60
+      },
+      "parentId": "sub-1",
+      "extent": "parent",
+      "data": {
+        "title": "rg-ai-dev",
+        "label": "rg-ai-dev",
+        "groupType": "resourceGroup",
+        "region": "eastus2"
+      }
+    },
+    {
+      "id": "func",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Function App",
+        "label": "func",
+        "resourceType": "Microsoft.Web/sites",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "kind": "functionapp",
+          "runtime": "python"
+        }
+      }
+    },
+    {
+      "id": "funcplan",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Consumption Plan",
+        "label": "funcplan",
+        "resourceType": "Microsoft.Web/serverfarms",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "sku": "Y1"
+        }
+      }
+    },
+    {
+      "id": "aoai",
+      "type": "azure.service",
+      "position": {
+        "x": 560,
+        "y": 80
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Azure OpenAI",
+        "label": "aoai",
+        "resourceType": "Microsoft.CognitiveServices/accounts",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "kind": "OpenAI",
+          "sku": "S0"
+        }
+      }
+    },
+    {
+      "id": "cosmos",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Cosmos DB",
+        "label": "cosmos",
+        "resourceType": "Microsoft.DocumentDB/databaseAccounts",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "api": "NoSQL"
+        }
+      }
+    },
+    {
+      "id": "sb",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Service Bus",
+        "label": "sb",
+        "resourceType": "Microsoft.ServiceBus/namespaces",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "sku": "Standard"
+        }
+      }
+    },
+    {
+      "id": "kv",
+      "type": "azure.service",
+      "position": {
+        "x": 560,
+        "y": 250
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Key Vault",
+        "label": "kv",
+        "resourceType": "Microsoft.KeyVault/vaults",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "sku": "standard"
+        }
+      }
+    },
+    {
+      "id": "st",
+      "type": "azure.service",
+      "position": {
+        "x": 40,
+        "y": 420
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Storage Account",
+        "label": "st",
+        "resourceType": "Microsoft.Storage/storageAccounts",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "sku": "Standard_LRS"
+        }
+      }
+    },
+    {
+      "id": "appi",
+      "type": "azure.service",
+      "position": {
+        "x": 300,
+        "y": 420
+      },
+      "parentId": "rg-1",
+      "extent": "parent",
+      "data": {
+        "title": "Application Insights",
+        "label": "appi",
+        "resourceType": "Microsoft.Insights/components",
+        "region": "eastus2",
+        "resourceGroup": "rg-ai-dev",
+        "properties": {
+          "kind": "web"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "func",
+      "target": "funcplan",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-2",
+      "source": "func",
+      "target": "aoai",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-3",
+      "source": "func",
+      "target": "cosmos",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-4",
+      "source": "func",
+      "target": "sb",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-5",
+      "source": "func",
+      "target": "kv",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-6",
+      "source": "func",
+      "target": "st",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    },
+    {
+      "id": "edge-7",
+      "source": "func",
+      "target": "appi",
+      "type": "animated",
+      "data": {
+        "connectionType": "dependency"
+      }
+    }
+  ]
+}

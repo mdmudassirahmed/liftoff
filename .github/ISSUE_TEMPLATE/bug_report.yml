@@ -1,0 +1,21 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, what you expected, and what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Backend console output, browser console errors. Remove subscription IDs and resource names.
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: OS, browser, Python and Node versions, commit

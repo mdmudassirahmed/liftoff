@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" font-family="Segoe UI, -apple-system, Helvetica, Arial, sans-serif">
+  <title>Liftoff: describe, design, generate, deploy</title>
+  <rect width="1200" height="560" rx="18" fill="#0F172A"/>
+
+  <!-- Headline -->
+  <text x="48" y="64" font-size="28" font-weight="700" fill="#F8FAFC">From a sentence to a deployed, secure Azure architecture</text>
+  <text x="48" y="96" font-size="16" fill="#94A3B8">Describe it. Refine it on the canvas. Get compiled, hardened IaC. Preview every change before it ships.</text>
+
+  <!-- Step labels -->
+  <g font-size="13" font-weight="700" letter-spacing="1.2" fill="#818CF8">
+    <text x="48" y="146">1  DESCRIBE</text>
+    <text x="330" y="146">2  DESIGN</text>
+    <text x="640" y="146">3  GENERATE</text>
+    <text x="930" y="146">4  DEPLOY</text>
+  </g>
+
+  <!-- 1. Prompt card -->
+  <rect x="48" y="162" width="250" height="330" rx="12" fill="#1E293B" stroke="#334155"/>
+  <text x="68" y="194" font-size="13" fill="#94A3B8">Create from prompt</text>
+  <rect x="64" y="208" width="218" height="150" rx="8" fill="#0F172A" stroke="#475569"/>
+  <g font-size="14" fill="#E2E8F0">
+    <text x="78" y="236">A Python web app with a</text>
+    <text x="78" y="258">private Azure SQL database,</text>
+    <text x="78" y="280">Key Vault for secrets and</text>
+    <text x="78" y="302">Application Insights, in</text>
+    <text x="78" y="324">East US.</text>
+  </g>
+  <rect x="64" y="378" width="218" height="40" rx="8" fill="#4F46E5"/>
+  <text x="173" y="403" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="middle">Generate diagram</text>
+  <text x="68" y="452" font-size="12" fill="#64748B">or drag 85 services</text>
+  <text x="68" y="470" font-size="12" fill="#64748B">onto the canvas yourself</text>
+
+  <!-- arrow -->
+  <path d="M304 327 L322 327" stroke="#475569" stroke-width="2"/>
+  <path d="M318 321 L326 327 L318 333" fill="none" stroke="#475569" stroke-width="2"/>
+
+  <!-- 2. Canvas card -->
+  <rect x="330" y="162" width="290" height="330" rx="12" fill="#F8FAFC"/>
+  <rect x="346" y="178" width="258" height="298" rx="8" fill="none" stroke="#10B981" stroke-dasharray="5 4"/>
+  <text x="358" y="198" font-size="11" font-weight="600" fill="#047857">Region: eastus</text>
+  <rect x="358" y="208" width="234" height="256" rx="8" fill="none" stroke="#0078D4"/>
+  <text x="370" y="228" font-size="11" font-weight="600" fill="#0078D4">Resource group: rg-webapp-dev</text>
+  <g font-size="12" fill="#0F172A">
+    <rect x="370" y="242" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="382" y="269">Web App</text>
+    <rect x="480" y="242" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="492" y="269">App Plan</text>
+    <rect x="370" y="306" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="382" y="333">Azure SQL</text>
+    <rect x="480" y="306" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="492" y="333">Key Vault</text>
+    <rect x="370" y="370" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="382" y="397">App Insights</text>
+    <rect x="480" y="370" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="492" y="397">Storage</text>
+  </g>
+  <g stroke="#6366F1" stroke-width="1.5">
+    <path d="M470 264 L480 264"/>
+    <path d="M420 286 L420 306"/>
+    <path d="M470 290 L490 306"/>
+    <path d="M370 276 L364 276 L364 392 L370 392" fill="none"/>
+  </g>
+  <rect x="358" y="428" width="234" height="28" rx="6" fill="#FEF3C7"/>
+  <text x="370" y="447" font-size="12" fill="#92400E">Issues: 0 errors, 1 recommendation</text>
+
+  <path d="M626 327 L634 327" stroke="#475569" stroke-width="2"/>
+  <path d="M630 321 L638 327 L630 333" fill="none" stroke="#475569" stroke-width="2"/>
+
+  <!-- 3. Code card -->
+  <rect x="640" y="162" width="270" height="330" rx="12" fill="#1E293B" stroke="#334155"/>
+  <text x="660" y="192" font-size="12" fill="#94A3B8">modules/storage/storageAccount.bicep</text>
+  <g font-family="Consolas, Menlo, monospace" font-size="12.5">
+    <text x="660" y="222" fill="#C4B5FD">properties: {</text>
+    <text x="676" y="244" fill="#E2E8F0">supportsHttpsTrafficOnly: <tspan fill="#67E8F9">true</tspan></text>
+    <text x="676" y="266" fill="#E2E8F0">minimumTlsVersion: <tspan fill="#86EFAC">'TLS1_2'</tspan></text>
+    <text x="676" y="288" fill="#E2E8F0">allowBlobPublicAccess: <tspan fill="#67E8F9">false</tspan></text>
+    <text x="676" y="310" fill="#E2E8F0">publicNetworkAccess: <tspan fill="#86EFAC">'Disabled'</tspan></text>
+    <text x="660" y="332" fill="#C4B5FD">}</text>
+  </g>
+  <rect x="656" y="354" width="238" height="120" rx="8" fill="#0F172A" stroke="#334155"/>
+  <text x="670" y="378" font-size="12" font-weight="600" fill="#E2E8F0">Guardrail report</text>
+  <g font-size="12">
+    <text x="670" y="402" fill="#86EFAC">Enforced</text><text x="736" y="402" fill="#CBD5E1">LFT-STG-01 HTTPS only</text>
+    <text x="670" y="424" fill="#86EFAC">Enforced</text><text x="736" y="424" fill="#CBD5E1">LFT-KV-01 Purge protection</text>
+    <text x="670" y="446" fill="#86EFAC">Enforced</text><text x="736" y="446" fill="#CBD5E1">LFT-WEB-01 HTTPS only</text>
+  </g>
+  <text x="670" y="466" font-size="11" fill="#64748B">compiled with az bicep build</text>
+
+  <path d="M916 327 L924 327" stroke="#475569" stroke-width="2"/>
+  <path d="M920 321 L928 327 L920 333" fill="none" stroke="#475569" stroke-width="2"/>
+
+  <!-- 4. What-If card -->
+  <rect x="930" y="162" width="222" height="330" rx="12" fill="#1E293B" stroke="#334155"/>
+  <text x="950" y="192" font-size="13" font-weight="600" fill="#E2E8F0">What-If preview</text>
+  <g font-family="Consolas, Menlo, monospace" font-size="12.5">
+    <text x="950" y="224" fill="#86EFAC">+ serverfarms/plan</text>
+    <text x="950" y="248" fill="#86EFAC">+ sites/web</text>
+    <text x="950" y="272" fill="#86EFAC">+ servers/sql</text>
+    <text x="950" y="296" fill="#86EFAC">+ vaults/kv</text>
+    <text x="950" y="320" fill="#86EFAC">+ components/appi</text>
+    <text x="950" y="344" fill="#86EFAC">+ storageAccounts/st</text>
+  </g>
+  <text x="950" y="378" font-size="12" fill="#94A3B8">6 to create, 0 to modify,</text>
+  <text x="950" y="396" font-size="12" fill="#94A3B8">0 to delete</text>
+  <rect x="950" y="420" width="182" height="40" rx="8" fill="#0891B2"/>
+  <text x="1041" y="445" font-size="14" font-weight="600" fill="#FFFFFF" text-anchor="middle">Deploy</text>
+
+  <text x="48" y="530" font-size="12" fill="#475569">Illustration of the Liftoff workflow</text>
+</svg>

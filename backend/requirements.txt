@@ -1,0 +1,13 @@
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7.0
+pydantic-settings>=2.4.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+sse-starlette>=2.0.0
+
+# Azure AI Foundry (keyless auth via DefaultAzureCredential)
+azure-ai-projects==2.0.0b2
+azure-identity>=1.17.0
+openai>=1.58.0

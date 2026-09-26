@@ -1,0 +1,538 @@
+{
+  "enabled": true,
+  "format": "bicep",
+  "summary": {
+    "guardrails_total": 35,
+    "resource_guardrails": 23,
+    "environment_guardrails": 12,
+    "by_severity": {
+      "critical": 1,
+      "high": 13,
+      "medium": 17,
+      "low": 4,
+      "informational": 0,
+      "none": 0
+    },
+    "checks_passed": 0,
+    "checks_failed": 11
+  },
+  "checks": [
+    {
+      "id": "storage-https-only",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "title": "Storage enforces HTTPS-only traffic",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "storage-no-public-blob",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "title": "Storage disables public blob access",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "storage-min-tls",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "title": "Storage requires TLS 1.2 minimum",
+      "severity": "medium",
+      "status": "warn"
+    },
+    {
+      "id": "keyvault-purge-protection",
+      "resource_type": "Microsoft.KeyVault/vaults",
+      "title": "Key Vault enables purge protection",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "keyvault-soft-delete",
+      "resource_type": "Microsoft.KeyVault/vaults",
+      "title": "Key Vault enables soft delete",
+      "severity": "medium",
+      "status": "warn"
+    },
+    {
+      "id": "web-https-only",
+      "resource_type": "Microsoft.Web/sites",
+      "title": "App/Function enforces HTTPS-only",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "web-min-tls",
+      "resource_type": "Microsoft.Web/sites",
+      "title": "App/Function requires TLS 1.2 minimum",
+      "severity": "medium",
+      "status": "warn"
+    },
+    {
+      "id": "web-no-public-network",
+      "resource_type": "Microsoft.Web/sites",
+      "title": "App/Function disables public network access",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "storage-no-public-network",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "title": "Storage disables public network access",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "storage-encryption-at-rest",
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "title": "Storage enforces encryption at rest (SSE)",
+      "severity": "high",
+      "status": "warn"
+    },
+    {
+      "id": "keyvault-no-public-network",
+      "resource_type": "Microsoft.KeyVault/vaults",
+      "title": "Key Vault restricts access to private networks",
+      "severity": "high",
+      "status": "warn"
+    }
+  ],
+  "by_resource": [
+    {
+      "resource_type": "Microsoft.Storage/storageAccounts",
+      "guardrails": [
+        {
+          "control_id": "LFT-STG-01",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Enable secure transfer (supportsHttpsTrafficOnly: true) so the account only accepts HTTPS requests.",
+          "risk": "Plain HTTP requests expose data and shared keys to interception in transit.",
+          "benchmark": "MCSB DP-3",
+          "azure_policy": "Secure transfer to storage accounts should be enabled"
+        },
+        {
+          "control_id": "LFT-STG-02",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Disable anonymous public blob access (allowBlobPublicAccess: false) on the account.",
+          "risk": "Anonymous containers let anyone on the internet list and read blob data.",
+          "benchmark": "MCSB DP-2",
+          "azure_policy": "Storage account public access should be disallowed"
+        },
+        {
+          "control_id": "LFT-STG-04",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Disable public network access and set networkAcls defaultAction to 'Deny'; reach the account through a private endpoint or selected virtual networks, allowing trusted Microsoft services.",
+          "risk": "A storage endpoint reachable from any network widens the attack surface for credential stuffing and data exfiltration.",
+          "benchmark": "MCSB NS-2",
+          "azure_policy": "Storage accounts should disable public network access"
+        },
+        {
+          "control_id": "LFT-STG-03",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Require TLS 1.2 or later (minimumTlsVersion: 'TLS1_2').",
+          "risk": "Legacy TLS 1.0/1.1 protocols have known weaknesses that allow downgrade and decryption attacks.",
+          "benchmark": "MCSB DP-3",
+          "azure_policy": "Storage accounts should have the specified minimum TLS version"
+        },
+        {
+          "control_id": "LFT-STG-05",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Keep storage service encryption (SSE) for encryption at rest enabled; use customer-managed keys in Key Vault when regulation requires key custody.",
+          "risk": "Without controlled encryption at rest, compromised media or backups could expose data.",
+          "benchmark": "MCSB DP-4",
+          "azure_policy": "Storage accounts should use customer-managed key for encryption"
+        },
+        {
+          "control_id": "LFT-STG-06",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Disable shared key authorization (allowSharedKeyAccess: false) and use Microsoft Entra ID with RBAC for data access.",
+          "risk": "Account keys grant full, non-attributable access and are frequently leaked in code and config.",
+          "benchmark": "MCSB IM-1",
+          "azure_policy": "Storage accounts should prevent shared key access"
+        },
+        {
+          "control_id": "LFT-STG-07",
+          "service": "Storage Account",
+          "layer": "Resource",
+          "severity": "low",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Enable blob and container soft delete with a retention period of at least 7 days.",
+          "risk": "Accidental or malicious deletion becomes unrecoverable.",
+          "benchmark": "MCSB BR-1",
+          "azure_policy": "Soft delete should be enabled for blobs and containers"
+        }
+      ]
+    },
+    {
+      "resource_type": "Microsoft.KeyVault/vaults",
+      "guardrails": [
+        {
+          "control_id": "LFT-KV-01",
+          "service": "Key Vault",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Enable purge protection (enablePurgeProtection: true) so deleted vaults and secrets cannot be permanently purged during the retention period.",
+          "risk": "An attacker or mistake could permanently destroy keys, making encrypted data unrecoverable.",
+          "benchmark": "MCSB DP-8",
+          "azure_policy": "Key vaults should have deletion protection enabled"
+        },
+        {
+          "control_id": "LFT-KV-03",
+          "service": "Key Vault",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Restrict the vault to private networks: publicNetworkAccess 'Disabled' with a private link endpoint, or networkAcls defaultAction 'Deny' with trusted service bypass.",
+          "risk": "A vault reachable from the public internet is exposed to brute-force and token replay attempts.",
+          "benchmark": "MCSB NS-2",
+          "azure_policy": "Azure Key Vault should disable public network access"
+        },
+        {
+          "control_id": "LFT-KV-02",
+          "service": "Key Vault",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Keep soft delete enabled with softDeleteRetentionInDays set (90 recommended).",
+          "risk": "Deleted secrets, keys and certificates cannot be recovered.",
+          "benchmark": "MCSB DP-8",
+          "azure_policy": "Key vaults should have soft delete enabled"
+        },
+        {
+          "control_id": "LFT-KV-04",
+          "service": "Key Vault",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Use the Azure RBAC permission model (enableRbacAuthorization: true) instead of vault access policies.",
+          "risk": "Access policies are coarse-grained and bypass central RBAC governance and PIM.",
+          "benchmark": "MCSB PA-7",
+          "azure_policy": "Azure Key Vault should use RBAC permission model"
+        },
+        {
+          "control_id": "LFT-KV-05",
+          "service": "Key Vault",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Send AuditEvent logs to a Log Analytics workspace through diagnostic settings.",
+          "risk": "Secret access cannot be investigated after an incident.",
+          "benchmark": "MCSB LT-3",
+          "azure_policy": "Resource logs in Key Vault should be enabled"
+        },
+        {
+          "control_id": "LFT-KV-06",
+          "service": "Key Vault",
+          "layer": "Resource",
+          "severity": "low",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Set expiration dates on secrets and keys and rotate them before expiry.",
+          "risk": "Long-lived secrets increase the blast radius of a leak.",
+          "benchmark": "MCSB DP-6",
+          "azure_policy": "Key Vault secrets should have an expiration date"
+        }
+      ]
+    },
+    {
+      "resource_type": "Microsoft.Web/sites",
+      "guardrails": [
+        {
+          "control_id": "LFT-FUNC-01",
+          "service": "Function App",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Set httpsOnly: true on the function app.",
+          "risk": "Function triggers over HTTP expose payloads and function keys.",
+          "benchmark": "MCSB DP-3",
+          "azure_policy": "Function apps should only be accessible over HTTPS"
+        },
+        {
+          "control_id": "LFT-FUNC-03",
+          "service": "Function App",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Disable public network access for internal functions and integrate the app with a virtual network.",
+          "risk": "Publicly reachable function endpoints can be invoked or abused by anyone holding a leaked key.",
+          "benchmark": "MCSB NS-2",
+          "azure_policy": "Function apps should disable public network access"
+        },
+        {
+          "control_id": "LFT-WEB-01",
+          "service": "App Service",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Set httpsOnly: true so HTTP requests are redirected to HTTPS.",
+          "risk": "Traffic over plain HTTP can be intercepted or modified.",
+          "benchmark": "MCSB DP-3",
+          "azure_policy": "App Service apps should only be accessible over HTTPS"
+        },
+        {
+          "control_id": "LFT-WEB-03",
+          "service": "App Service",
+          "layer": "Resource",
+          "severity": "high",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Disable public network access for internal apps and front them with a private endpoint, Application Gateway or Front Door.",
+          "risk": "Internal workloads exposed to the internet invite scanning and exploitation.",
+          "benchmark": "MCSB NS-2",
+          "azure_policy": "App Service apps should disable public network access"
+        },
+        {
+          "control_id": "LFT-FUNC-02",
+          "service": "Function App",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Require TLS 1.2 or later (siteConfig.minTlsVersion: '1.2').",
+          "risk": "Older TLS versions are vulnerable to protocol downgrade attacks.",
+          "benchmark": "MCSB DP-3",
+          "azure_policy": "Function apps should use the latest TLS version"
+        },
+        {
+          "control_id": "LFT-FUNC-04",
+          "service": "Function App",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Use a managed identity for the AzureWebJobsStorage connection and downstream services (identity-based connections).",
+          "risk": "Storage account keys in app settings grant full account access if leaked.",
+          "benchmark": "MCSB IM-3",
+          "azure_policy": "Function apps should use managed identity"
+        },
+        {
+          "control_id": "LFT-WEB-02",
+          "service": "App Service",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "warn",
+          "category": "control",
+          "recommendation": "Require TLS 1.2 or later (siteConfig.minTlsVersion: '1.2').",
+          "risk": "Older TLS versions are vulnerable to protocol downgrade attacks.",
+          "benchmark": "MCSB DP-3",
+          "azure_policy": "App Service apps should use the latest TLS version"
+        },
+        {
+          "control_id": "LFT-WEB-04",
+          "service": "App Service",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Enable a managed identity and use it to reach Key Vault, Storage and databases instead of connection strings.",
+          "risk": "Embedded credentials leak through app settings, logs and source control.",
+          "benchmark": "MCSB IM-3",
+          "azure_policy": "App Service apps should use managed identity"
+        },
+        {
+          "control_id": "LFT-WEB-05",
+          "service": "App Service",
+          "layer": "Resource",
+          "severity": "medium",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Disable FTP deployment (siteConfig.ftpsState: 'Disabled' or 'FtpsOnly').",
+          "risk": "FTP sends deployment credentials in clear text.",
+          "benchmark": "MCSB PV-2",
+          "azure_policy": "FTPS only should be required in App Service apps"
+        },
+        {
+          "control_id": "LFT-WEB-06",
+          "service": "App Service",
+          "layer": "Resource",
+          "severity": "low",
+          "status": "advisory",
+          "category": "guidance",
+          "recommendation": "Keep remote debugging disabled outside of short troubleshooting windows.",
+          "risk": "Remote debugging opens additional inbound ports on the worker.",
+          "benchmark": "MCSB PV-2",
+          "azure_policy": "App Service apps should have remote debugging turned off"
+        }
+      ]
+    }
+  ],
+  "environment": [
+    {
+      "control_id": "LFT-ENV-01",
+      "service": "Entra ID",
+      "layer": "Platform",
+      "severity": "critical",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Require multi-factor authentication for all users through Conditional Access.",
+      "risk": "Password-only accounts are easily phished or sprayed.",
+      "benchmark": "MCSB IM-6",
+      "azure_policy": "Accounts with owner permissions on Azure resources should be MFA enabled"
+    },
+    {
+      "control_id": "LFT-ENV-02",
+      "service": "Entra ID",
+      "layer": "Platform",
+      "severity": "high",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Block legacy authentication protocols tenant-wide.",
+      "risk": "Legacy protocols cannot enforce MFA.",
+      "benchmark": "MCSB IM-7",
+      "azure_policy": "Conditional Access should block legacy authentication"
+    },
+    {
+      "control_id": "LFT-ENV-03",
+      "service": "Entra ID",
+      "layer": "Platform",
+      "severity": "high",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Use Privileged Identity Management for eligible, time-bound role activation.",
+      "risk": "Standing privileged access increases the impact of a compromised account.",
+      "benchmark": "MCSB PA-2",
+      "azure_policy": "Privileged roles should use just-in-time access"
+    },
+    {
+      "control_id": "LFT-ENV-04",
+      "service": "Identity and Access Management",
+      "layer": "Platform",
+      "severity": "high",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Keep subscription owners to a small, reviewed group (between 2 and 3).",
+      "risk": "Too many owners widens the privileged attack surface.",
+      "benchmark": "MCSB PA-1",
+      "azure_policy": "A maximum of 3 owners should be designated for your subscription"
+    },
+    {
+      "control_id": "LFT-ENV-10",
+      "service": "Defender for cloud",
+      "layer": "Platform",
+      "severity": "high",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Enable Defender CSPM and the workload plans (Servers, Storage, Key Vault, Databases, Containers) that match your estate.",
+      "risk": "Threats and misconfigurations are not detected.",
+      "benchmark": "MCSB LT-1",
+      "azure_policy": "Microsoft Defender for Cloud plans should be enabled"
+    },
+    {
+      "control_id": "LFT-ENV-05",
+      "service": "Identity and Access Management",
+      "layer": "Platform",
+      "severity": "medium",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Remove guest and external accounts from privileged roles and review access regularly.",
+      "risk": "External identities are outside your lifecycle and MFA controls.",
+      "benchmark": "MCSB PA-7",
+      "azure_policy": "Guest accounts with owner permissions on Azure resources should be removed"
+    },
+    {
+      "control_id": "LFT-ENV-06",
+      "service": "Identity and Access Management",
+      "layer": "Platform",
+      "severity": "medium",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Prefer built-in least-privilege roles; avoid wildcard custom roles.",
+      "risk": "Custom wildcard roles silently grant owner-equivalent rights.",
+      "benchmark": "MCSB PA-7",
+      "azure_policy": "Custom subscription owner roles should not exist"
+    },
+    {
+      "control_id": "LFT-ENV-07",
+      "service": "Subscription",
+      "layer": "Platform",
+      "severity": "medium",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Configure security contact details and alert notifications in Defender for Cloud.",
+      "risk": "Security alerts go unnoticed.",
+      "benchmark": "MCSB LT-1",
+      "azure_policy": "Subscriptions should have a contact email address for security issues"
+    },
+    {
+      "control_id": "LFT-ENV-08",
+      "service": "Subscription",
+      "layer": "Platform",
+      "severity": "medium",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Enforce tags such as environment, owner and cost-center with Azure Policy.",
+      "risk": "Untagged resources cannot be attributed, costed or cleaned up.",
+      "benchmark": "MCSB AM-2",
+      "azure_policy": "Require a tag on resources"
+    },
+    {
+      "control_id": "LFT-ENV-09",
+      "service": "Subscription",
+      "layer": "Platform",
+      "severity": "medium",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Restrict deployments to approved regions with Azure Policy.",
+      "risk": "Data residency obligations can be breached.",
+      "benchmark": "MCSB AM-2",
+      "azure_policy": "Allowed locations"
+    },
+    {
+      "control_id": "LFT-ENV-11",
+      "service": "Defender for cloud",
+      "layer": "Platform",
+      "severity": "medium",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Assign the Microsoft cloud security benchmark policy initiative at management group scope.",
+      "risk": "Continuous compliance drift goes unmeasured.",
+      "benchmark": "MCSB PV-1",
+      "azure_policy": "Microsoft cloud security benchmark initiative should be assigned"
+    },
+    {
+      "control_id": "LFT-ENV-12",
+      "service": "Subscription Feature",
+      "layer": "Platform",
+      "severity": "low",
+      "status": "advisory",
+      "category": "guidance",
+      "recommendation": "Register only the resource providers you need and review preview features before enabling them.",
+      "risk": "Unreviewed preview features may not meet security and support requirements.",
+      "benchmark": "MCSB AM-1",
+      "azure_policy": "Resource providers should be registered deliberately"
+    }
+  ],
+  "exceptions": []
+}

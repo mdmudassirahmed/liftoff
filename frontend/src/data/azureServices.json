@@ -1,0 +1,1407 @@
+{
+  "services": [
+    {
+      "id": "virtual-machine",
+      "name": "Virtual Machine",
+      "resourceType": "Microsoft.Compute/virtualMachines",
+      "category": "Compute",
+      "iconPath": "azure:virtual-machine",
+      "description": "Azure Virtual Machine for running applications",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.hardwareProfile.vmSize", "properties.storageProfile", "properties.osProfile", "properties.networkProfile"],
+        "optional": ["tags", "zones", "identity", "properties.priority", "properties.evictionPolicy", "properties.billingProfile"]
+      },
+      "defaultProperties": {
+        "vmSize": "Standard_D2s_v3",
+        "osType": "Linux",
+        "priority": "Regular"
+      }
+    },
+    {
+      "id": "vm-scale-set",
+      "name": "VM Scale Set",
+      "resourceType": "Microsoft.Compute/virtualMachineScaleSets",
+      "category": "Compute",
+      "iconPath": "azure:virtual-machine-scale-set",
+      "description": "Auto-scaling VM Scale Set",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.upgradePolicy", "properties.virtualMachineProfile"],
+        "optional": ["tags", "zones", "identity", "properties.overprovision", "properties.platformFaultDomainCount"]
+      },
+      "defaultProperties": {
+        "capacity": 2,
+        "vmSize": "Standard_D2s_v3",
+        "upgradePolicy": "Manual"
+      }
+    },
+    {
+      "id": "availability-set",
+      "name": "Availability Set",
+      "resourceType": "Microsoft.Compute/availabilitySets",
+      "category": "Compute",
+      "iconPath": "azure:availability-set",
+      "description": "Group VMs for high availability",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "sku", "properties.platformFaultDomainCount", "properties.platformUpdateDomainCount"]
+      },
+      "defaultProperties": {
+        "platformFaultDomainCount": 2,
+        "platformUpdateDomainCount": 5
+      }
+    },
+    {
+      "id": "managed-disk",
+      "name": "Managed Disk",
+      "resourceType": "Microsoft.Compute/disks",
+      "category": "Compute",
+      "iconPath": "azure:disk",
+      "description": "Managed disk for VMs",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.creationData"],
+        "optional": ["tags", "sku", "zones", "properties.diskSizeGB", "properties.encryption"]
+      },
+      "defaultProperties": {
+        "diskSizeGB": 128,
+        "sku": "Premium_LRS"
+      }
+    },
+    {
+      "id": "image",
+      "name": "Image",
+      "resourceType": "Microsoft.Compute/images",
+      "category": "Compute",
+      "iconPath": "azure:image",
+      "description": "Custom VM image",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.storageProfile"],
+        "optional": ["tags", "properties.hyperVGeneration"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "app-service",
+      "name": "App Service",
+      "resourceType": "Microsoft.Web/sites",
+      "category": "Web",
+      "iconPath": "azure:app-service",
+      "description": "Fully managed web app hosting",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.serverFarmId"],
+        "optional": ["kind", "tags", "identity", "properties.httpsOnly", "properties.clientAffinityEnabled", "properties.siteConfig", "properties.virtualNetworkSubnetId"]
+      },
+      "defaultProperties": {
+        "kind": "app",
+        "httpsOnly": true,
+        "clientAffinityEnabled": false
+      }
+    },
+    {
+      "id": "app-service-plan",
+      "name": "App Service Plan",
+      "resourceType": "Microsoft.Web/serverfarms",
+      "category": "Web",
+      "iconPath": "azure:app-service-plan",
+      "description": "Hosting plan for App Services",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["kind", "tags", "properties.reserved", "properties.perSiteScaling", "properties.maximumElasticWorkerCount", "properties.zoneRedundant"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "P1v3", "tier": "PremiumV3", "capacity": 1 },
+        "kind": "linux",
+        "reserved": true
+      }
+    },
+    {
+      "id": "static-web-app",
+      "name": "Static Web App",
+      "resourceType": "Microsoft.Web/staticSites",
+      "category": "Web",
+      "iconPath": "azure:static-apps",
+      "description": "Hosting for static web apps",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "properties.repositoryUrl", "properties.branch", "properties.buildProperties", "properties.stagingEnvironmentPolicy"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Free", "tier": "Free" }
+      }
+    },
+    {
+      "id": "function-app",
+      "name": "Function App",
+      "resourceType": "Microsoft.Web/sites",
+      "category": "Compute",
+      "iconPath": "azure:function-app",
+      "description": "Serverless compute service",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "properties.serverFarmId"],
+        "optional": ["tags", "identity", "properties.httpsOnly", "properties.siteConfig", "properties.storageAccountRequired"]
+      },
+      "defaultProperties": {
+        "kind": "functionapp,linux",
+        "httpsOnly": true,
+        "runtime": "node",
+        "runtimeVersion": "20"
+      }
+    },
+    {
+      "id": "container-app",
+      "name": "Container App",
+      "resourceType": "Microsoft.App/containerApps",
+      "category": "Containers",
+      "iconPath": "azure:container-apps",
+      "description": "Serverless containers",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.managedEnvironmentId", "properties.configuration", "properties.template"],
+        "optional": ["tags", "identity", "properties.workloadProfileName", "properties.environmentId"]
+      },
+      "defaultProperties": {
+        "configuration": {
+          "ingress": { "external": true, "targetPort": 80, "transport": "auto" },
+          "activeRevisionsMode": "Single"
+        }
+      }
+    },
+    {
+      "id": "container-app-environment",
+      "name": "Container App Environment",
+      "resourceType": "Microsoft.App/managedEnvironments",
+      "category": "Containers",
+      "iconPath": "azure:container-apps-environments",
+      "description": "Environment for Container Apps",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.vnetConfiguration", "properties.appLogsConfiguration", "properties.zoneRedundant", "properties.workloadProfiles"]
+      },
+      "defaultProperties": {
+        "zoneRedundant": false
+      }
+    },
+    {
+      "id": "aks",
+      "name": "Kubernetes Service (AKS)",
+      "resourceType": "Microsoft.ContainerService/managedClusters",
+      "category": "Containers",
+      "iconPath": "azure:kubernetes-services",
+      "description": "Managed Kubernetes cluster",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.dnsPrefix", "properties.agentPoolProfiles"],
+        "optional": ["tags", "identity", "sku", "properties.kubernetesVersion", "properties.networkProfile", "properties.addonProfiles", "properties.aadProfile", "properties.autoUpgradeProfile"]
+      },
+      "defaultProperties": {
+        "kubernetesVersion": "1.29",
+        "agentPoolProfiles": [{
+          "name": "agentpool",
+          "count": 3,
+          "vmSize": "Standard_D4s_v3",
+          "mode": "System"
+        }],
+        "networkProfile": {
+          "networkPlugin": "azure",
+          "networkPolicy": "azure"
+        }
+      }
+    },
+    {
+      "id": "container-registry",
+      "name": "Container Registry",
+      "resourceType": "Microsoft.ContainerRegistry/registries",
+      "category": "Containers",
+      "iconPath": "azure:container-registries",
+      "description": "Private Docker registry",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.adminUserEnabled", "properties.policies", "properties.encryption", "properties.publicNetworkAccess", "properties.networkRuleSet"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Premium" },
+        "adminUserEnabled": false,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "id": "container-instance",
+      "name": "Container Instance",
+      "resourceType": "Microsoft.ContainerInstance/containerGroups",
+      "category": "Containers",
+      "iconPath": "azure:container-instances",
+      "description": "Run containers without managing servers",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.containers", "properties.osType"],
+        "optional": ["tags", "identity", "properties.restartPolicy", "properties.ipAddress", "properties.volumes", "properties.imageRegistryCredentials"]
+      },
+      "defaultProperties": {
+        "osType": "Linux",
+        "restartPolicy": "OnFailure"
+      }
+    },
+    {
+      "id": "virtual-network",
+      "name": "Virtual Network",
+      "resourceType": "Microsoft.Network/virtualNetworks",
+      "category": "Networking",
+      "iconPath": "azure:virtual-network",
+      "description": "Private network in Azure",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.addressSpace"],
+        "optional": ["tags", "properties.subnets", "properties.dhcpOptions", "properties.enableDdosProtection", "properties.encryption", "properties.virtualNetworkPeerings"]
+      },
+      "defaultProperties": {
+        "addressSpace": { "addressPrefixes": ["10.0.0.0/16"] }
+      }
+    },
+    {
+      "id": "subnet",
+      "name": "Subnet",
+      "resourceType": "Microsoft.Network/virtualNetworks/subnets",
+      "category": "Networking",
+      "iconPath": "azure:subnet",
+      "description": "Subnet within a VNet",
+      "bicepProperties": {
+        "required": ["name", "properties.addressPrefix"],
+        "optional": ["properties.networkSecurityGroup", "properties.routeTable", "properties.serviceEndpoints", "properties.delegations", "properties.privateEndpointNetworkPolicies", "properties.privateLinkServiceNetworkPolicies"]
+      },
+      "defaultProperties": {
+        "addressPrefix": "10.0.1.0/24"
+      }
+    },
+    {
+      "id": "network-security-group",
+      "name": "Network Security Group",
+      "resourceType": "Microsoft.Network/networkSecurityGroups",
+      "category": "Networking",
+      "iconPath": "azure:network-security-groups",
+      "description": "Network access control rules",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.securityRules", "properties.flushConnection"]
+      },
+      "defaultProperties": {
+        "securityRules": []
+      }
+    },
+    {
+      "id": "public-ip",
+      "name": "Public IP Address",
+      "resourceType": "Microsoft.Network/publicIPAddresses",
+      "category": "Networking",
+      "iconPath": "azure:public-ip-addresses",
+      "description": "Public IP address resource",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.publicIPAllocationMethod"],
+        "optional": ["tags", "zones", "properties.dnsSettings", "properties.idleTimeoutInMinutes", "properties.publicIPAddressVersion"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard", "tier": "Regional" },
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "id": "load-balancer",
+      "name": "Load Balancer",
+      "resourceType": "Microsoft.Network/loadBalancers",
+      "category": "Networking",
+      "iconPath": "azure:load-balancers",
+      "description": "Layer 4 load balancer",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "properties.frontendIPConfigurations", "properties.backendAddressPools", "properties.loadBalancingRules", "properties.probes", "properties.inboundNatRules", "properties.outboundRules"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard", "tier": "Regional" }
+      }
+    },
+    {
+      "id": "application-gateway",
+      "name": "Application Gateway",
+      "resourceType": "Microsoft.Network/applicationGateways",
+      "category": "Networking",
+      "iconPath": "azure:application-gateways",
+      "description": "Layer 7 load balancer with WAF",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.sku", "properties.gatewayIPConfigurations", "properties.frontendIPConfigurations", "properties.frontendPorts", "properties.backendAddressPools", "properties.httpListeners", "properties.requestRoutingRules"],
+        "optional": ["tags", "zones", "identity", "properties.webApplicationFirewallConfiguration", "properties.sslCertificates", "properties.sslPolicy", "properties.autoscaleConfiguration"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard_v2", "tier": "Standard_v2", "capacity": 2 }
+      }
+    },
+    {
+      "id": "front-door",
+      "name": "Front Door",
+      "resourceType": "Microsoft.Cdn/profiles",
+      "category": "Networking",
+      "iconPath": "azure:front-door-and-cdn-profiles",
+      "description": "Global CDN and app delivery",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.originResponseTimeoutSeconds"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Premium_AzureFrontDoor" },
+        "location": "global"
+      }
+    },
+    {
+      "id": "cdn-profile",
+      "name": "CDN Profile",
+      "resourceType": "Microsoft.Cdn/profiles",
+      "category": "Networking",
+      "iconPath": "azure:cdn-profiles",
+      "description": "Content delivery network",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "properties.originResponseTimeoutSeconds"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard_Microsoft" },
+        "location": "global"
+      }
+    },
+    {
+      "id": "private-endpoint",
+      "name": "Private Endpoint",
+      "resourceType": "Microsoft.Network/privateEndpoints",
+      "category": "Networking",
+      "iconPath": "azure:private-endpoints",
+      "description": "Private connectivity to Azure services",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.subnet", "properties.privateLinkServiceConnections"],
+        "optional": ["tags", "properties.customNetworkInterfaceName", "properties.ipConfigurations", "properties.manualPrivateLinkServiceConnections"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "private-dns-zone",
+      "name": "Private DNS Zone",
+      "resourceType": "Microsoft.Network/privateDnsZones",
+      "category": "Networking",
+      "iconPath": "azure:private-dns-zones",
+      "description": "Private DNS resolution",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags"]
+      },
+      "defaultProperties": {
+        "location": "global"
+      }
+    },
+    {
+      "id": "dns-zone",
+      "name": "DNS Zone",
+      "resourceType": "Microsoft.Network/dnsZones",
+      "category": "Networking",
+      "iconPath": "azure:dns-zones",
+      "description": "Public DNS hosting",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.zoneType"]
+      },
+      "defaultProperties": {
+        "location": "global"
+      }
+    },
+    {
+      "id": "vpn-gateway",
+      "name": "VPN Gateway",
+      "resourceType": "Microsoft.Network/virtualNetworkGateways",
+      "category": "Networking",
+      "iconPath": "azure:virtual-network-gateways",
+      "description": "VPN connectivity gateway",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.gatewayType", "properties.vpnType", "properties.sku", "properties.ipConfigurations"],
+        "optional": ["tags", "properties.enableBgp", "properties.activeActive", "properties.vpnGatewayGeneration", "properties.vpnClientConfiguration"]
+      },
+      "defaultProperties": {
+        "gatewayType": "Vpn",
+        "vpnType": "RouteBased",
+        "sku": { "name": "VpnGw1", "tier": "VpnGw1" }
+      }
+    },
+    {
+      "id": "express-route",
+      "name": "ExpressRoute Circuit",
+      "resourceType": "Microsoft.Network/expressRouteCircuits",
+      "category": "Networking",
+      "iconPath": "azure:expressroute-circuits",
+      "description": "Private connection to Azure",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.serviceProviderProperties"],
+        "optional": ["tags", "properties.bandwidthInGbps", "properties.allowClassicOperations", "properties.peerings"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard_MeteredData", "tier": "Standard", "family": "MeteredData" }
+      }
+    },
+    {
+      "id": "bastion",
+      "name": "Bastion",
+      "resourceType": "Microsoft.Network/bastionHosts",
+      "category": "Networking",
+      "iconPath": "azure:bastion",
+      "description": "Secure RDP/SSH access",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.ipConfigurations"],
+        "optional": ["tags", "sku", "properties.enableTunneling", "properties.enableShareableLink", "properties.enableFileCopy", "properties.enableKerberos"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard" }
+      }
+    },
+    {
+      "id": "firewall",
+      "name": "Firewall",
+      "resourceType": "Microsoft.Network/azureFirewalls",
+      "category": "Networking",
+      "iconPath": "azure:firewalls",
+      "description": "Cloud-native network firewall",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.sku", "properties.ipConfigurations"],
+        "optional": ["tags", "zones", "properties.firewallPolicy", "properties.threatIntelMode", "properties.applicationRuleCollections", "properties.networkRuleCollections", "properties.natRuleCollections"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "AZFW_VNet", "tier": "Standard" },
+        "threatIntelMode": "Alert"
+      }
+    },
+    {
+      "id": "firewall-policy",
+      "name": "Firewall Policy",
+      "resourceType": "Microsoft.Network/firewallPolicies",
+      "category": "Networking",
+      "iconPath": "azure:firewall-policies",
+      "description": "Policy for Azure Firewall",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.sku", "properties.threatIntelMode", "properties.dnsSettings", "properties.intrusionDetection"]
+      },
+      "defaultProperties": {
+        "sku": { "tier": "Standard" }
+      }
+    },
+    {
+      "id": "nat-gateway",
+      "name": "NAT Gateway",
+      "resourceType": "Microsoft.Network/natGateways",
+      "category": "Networking",
+      "iconPath": "azure:nat-gateway",
+      "description": "Outbound NAT for VNet",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "zones", "properties.idleTimeoutInMinutes", "properties.publicIpAddresses", "properties.publicIpPrefixes"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard" },
+        "idleTimeoutInMinutes": 4
+      }
+    },
+    {
+      "id": "route-table",
+      "name": "Route Table",
+      "resourceType": "Microsoft.Network/routeTables",
+      "category": "Networking",
+      "iconPath": "azure:route-tables",
+      "description": "Custom routing table",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.routes", "properties.disableBgpRoutePropagation"]
+      },
+      "defaultProperties": {
+        "disableBgpRoutePropagation": false
+      }
+    },
+    {
+      "id": "traffic-manager",
+      "name": "Traffic Manager",
+      "resourceType": "Microsoft.Network/trafficManagerProfiles",
+      "category": "Networking",
+      "iconPath": "azure:traffic-manager-profiles",
+      "description": "DNS-based traffic routing",
+      "bicepProperties": {
+        "required": ["name", "properties.trafficRoutingMethod", "properties.dnsConfig", "properties.monitorConfig"],
+        "optional": ["tags", "properties.endpoints", "properties.trafficViewEnrollmentStatus"]
+      },
+      "defaultProperties": {
+        "trafficRoutingMethod": "Performance"
+      }
+    },
+    {
+      "id": "storage-account",
+      "name": "Storage Account",
+      "resourceType": "Microsoft.Storage/storageAccounts",
+      "category": "Storage",
+      "iconPath": "azure:storage-accounts",
+      "description": "Durable cloud storage",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.accessTier", "properties.supportsHttpsTrafficOnly", "properties.minimumTlsVersion", "properties.allowBlobPublicAccess", "properties.networkAcls", "properties.encryption", "properties.isHnsEnabled", "properties.allowSharedKeyAccess"]
+      },
+      "defaultProperties": {
+        "kind": "StorageV2",
+        "sku": { "name": "Standard_LRS" },
+        "accessTier": "Hot",
+        "supportsHttpsTrafficOnly": true,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false
+      }
+    },
+    {
+      "id": "blob-container",
+      "name": "Blob Container",
+      "resourceType": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "category": "Storage",
+      "iconPath": "azure:blob-storage",
+      "description": "Object storage container",
+      "bicepProperties": {
+        "required": ["name"],
+        "optional": ["properties.publicAccess", "properties.metadata", "properties.immutableStorageWithVersioning", "properties.defaultEncryptionScope"]
+      },
+      "defaultProperties": {
+        "publicAccess": "None"
+      }
+    },
+    {
+      "id": "file-share",
+      "name": "File Share",
+      "resourceType": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "category": "Storage",
+      "iconPath": "azure:file-shares",
+      "description": "Managed file share",
+      "bicepProperties": {
+        "required": ["name"],
+        "optional": ["properties.shareQuota", "properties.accessTier", "properties.enabledProtocols"]
+      },
+      "defaultProperties": {
+        "shareQuota": 100,
+        "accessTier": "TransactionOptimized"
+      }
+    },
+    {
+      "id": "queue-storage",
+      "name": "Queue Storage",
+      "resourceType": "Microsoft.Storage/storageAccounts/queueServices/queues",
+      "category": "Storage",
+      "iconPath": "azure:queue-storage",
+      "description": "Message queue storage",
+      "bicepProperties": {
+        "required": ["name"],
+        "optional": ["properties.metadata"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "table-storage",
+      "name": "Table Storage",
+      "resourceType": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "category": "Storage",
+      "iconPath": "azure:table-storage",
+      "description": "NoSQL table storage",
+      "bicepProperties": {
+        "required": ["name"],
+        "optional": []
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "data-lake-storage",
+      "name": "Data Lake Storage Gen2",
+      "resourceType": "Microsoft.Storage/storageAccounts",
+      "category": "Storage",
+      "iconPath": "azure:data-lake-storage",
+      "description": "Analytics-optimized storage",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "properties.isHnsEnabled", "properties.accessTier"]
+      },
+      "defaultProperties": {
+        "kind": "StorageV2",
+        "sku": { "name": "Standard_LRS" },
+        "isHnsEnabled": true
+      }
+    },
+    {
+      "id": "managed-disk",
+      "name": "Managed Disk",
+      "resourceType": "Microsoft.Compute/disks",
+      "category": "Storage",
+      "iconPath": "azure:disks",
+      "description": "Managed disk for VMs",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.creationData"],
+        "optional": ["tags", "sku", "zones", "properties.diskSizeGB", "properties.diskIOPSReadWrite", "properties.diskMBpsReadWrite"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Premium_LRS" },
+        "diskSizeGB": 128
+      }
+    },
+    {
+      "id": "sql-server",
+      "name": "SQL Server",
+      "resourceType": "Microsoft.Sql/servers",
+      "category": "Databases",
+      "iconPath": "azure:sql-servers",
+      "description": "Logical SQL Server",
+      "bicepProperties": {
+        "required": ["name", "location", "administratorLogin", "administratorLoginPassword"],
+        "optional": [
+          "tags",
+          "identity",
+          "version",
+          "minimalTlsVersion",
+          "publicNetworkAccess",
+          "administrators",
+          "primaryUserAssignedIdentityId",
+          "federatedClientId",
+          "servicePrincipal",
+          "allowAzureIps",
+          "enableADS",
+          "enableVA"
+        ],
+        "sensitive": ["administratorLoginPassword"],
+        "conditionalRequired": {
+          "administrators": "Required for Azure AD authentication"
+        }
+      },
+      "defaultProperties": {
+        "version": "12.0",
+        "minimalTlsVersion": "1.2",
+        "publicNetworkAccess": "Enabled",
+        "allowAzureIps": true,
+        "enableADS": false,
+        "enableVA": false
+      }
+    },
+    {
+      "id": "sql-database",
+      "name": "SQL Database",
+      "resourceType": "Microsoft.Sql/servers/databases",
+      "category": "Databases",
+      "iconPath": "azure:sql-database",
+      "description": "Managed SQL database",
+      "parentResourceType": "Microsoft.Sql/servers",
+      "bicepProperties": {
+        "required": ["name", "location", "skuName", "tier", "parent"],
+        "optional": [
+          "tags",
+          "collation",
+          "maxSizeBytes",
+          "sampleName",
+          "zoneRedundant",
+          "licenseType",
+          "readScale",
+          "highAvailabilityReplicaCount",
+          "minCapacity",
+          "autoPauseDelay",
+          "requestedBackupStorageRedundancy",
+          "isLedgerOn",
+          "availabilityZone",
+          "useFreeLimit",
+          "freeLimitExhaustionBehavior",
+          "maintenanceConfigurationId",
+          "elasticPoolId"
+        ]
+      },
+      "defaultProperties": {
+        "skuName": "S0",
+        "tier": "Standard",
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": 268435456000,
+        "zoneRedundant": false,
+        "readScale": "Disabled",
+        "highAvailabilityReplicaCount": 0,
+        "requestedBackupStorageRedundancy": "Geo",
+        "isLedgerOn": false,
+        "availabilityZone": "NoPreference",
+        "useFreeLimit": false
+      }
+    },
+    {
+      "id": "sql-elastic-pool",
+      "name": "SQL Elastic Pool",
+      "resourceType": "Microsoft.Sql/servers/elasticPools",
+      "category": "Databases",
+      "iconPath": "azure:sql-elastic-pools",
+      "description": "Shared resources for SQL DBs",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "sku", "properties.maxSizeBytes", "properties.perDatabaseSettings", "properties.zoneRedundant", "properties.licenseType"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "StandardPool", "tier": "Standard", "capacity": 50 }
+      }
+    },
+    {
+      "id": "sql-managed-instance",
+      "name": "SQL Managed Instance",
+      "resourceType": "Microsoft.Sql/managedInstances",
+      "category": "Databases",
+      "iconPath": "azure:sql-managed-instance",
+      "description": "Fully managed SQL instance",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.administratorLogin", "properties.administratorLoginPassword", "properties.subnetId"],
+        "optional": ["tags", "identity", "properties.storageSizeInGB", "properties.vCores", "properties.licenseType", "properties.publicDataEndpointEnabled"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "GP_Gen5", "tier": "GeneralPurpose" },
+        "storageSizeInGB": 32,
+        "vCores": 8
+      }
+    },
+    {
+      "id": "cosmos-db",
+      "name": "Cosmos DB",
+      "resourceType": "Microsoft.DocumentDB/databaseAccounts",
+      "category": "Databases",
+      "iconPath": "azure:cosmos-db",
+      "description": "Globally distributed NoSQL",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.databaseAccountOfferType", "properties.locations"],
+        "optional": ["tags", "kind", "identity", "properties.consistencyPolicy", "properties.capabilities", "properties.enableFreeTier", "properties.enableAutomaticFailover", "properties.publicNetworkAccess", "properties.isVirtualNetworkFilterEnabled", "properties.enableAnalyticalStorage"]
+      },
+      "defaultProperties": {
+        "kind": "GlobalDocumentDB",
+        "databaseAccountOfferType": "Standard",
+        "consistencyPolicy": { "defaultConsistencyLevel": "Session" },
+        "enableFreeTier": false
+      }
+    },
+    {
+      "id": "redis-cache",
+      "name": "Azure Cache for Redis",
+      "resourceType": "Microsoft.Cache/redis",
+      "category": "Databases",
+      "iconPath": "azure:cache-redis",
+      "description": "In-memory data store",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.sku"],
+        "optional": ["tags", "zones", "properties.enableNonSslPort", "properties.minimumTlsVersion", "properties.publicNetworkAccess", "properties.redisConfiguration", "properties.replicasPerMaster", "properties.shardCount"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard", "family": "C", "capacity": 1 },
+        "enableNonSslPort": false,
+        "minimumTlsVersion": "1.2"
+      }
+    },
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL Flexible Server",
+      "resourceType": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "category": "Databases",
+      "iconPath": "azure:database-postgresql-server",
+      "description": "Managed PostgreSQL",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.version", "properties.administratorLogin", "properties.administratorLoginPassword"],
+        "optional": ["tags", "identity", "properties.storage", "properties.backup", "properties.highAvailability", "properties.network", "properties.maintenanceWindow"]
+      },
+      "defaultProperties": {
+        "version": "16",
+        "sku": { "name": "Standard_D2ds_v5", "tier": "GeneralPurpose" },
+        "storage": { "storageSizeGB": 32 }
+      }
+    },
+    {
+      "id": "mysql",
+      "name": "MySQL Flexible Server",
+      "resourceType": "Microsoft.DBforMySQL/flexibleServers",
+      "category": "Databases",
+      "iconPath": "azure:database-mysql-server",
+      "description": "Managed MySQL",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.version", "properties.administratorLogin", "properties.administratorLoginPassword"],
+        "optional": ["tags", "identity", "properties.storage", "properties.backup", "properties.highAvailability", "properties.network", "properties.maintenanceWindow"]
+      },
+      "defaultProperties": {
+        "version": "8.0.21",
+        "sku": { "name": "Standard_D2ds_v5", "tier": "GeneralPurpose" },
+        "storage": { "storageSizeGB": 32 }
+      }
+    },
+    {
+      "id": "key-vault",
+      "name": "Key Vault",
+      "resourceType": "Microsoft.KeyVault/vaults",
+      "category": "Security",
+      "iconPath": "azure:key-vaults",
+      "description": "Secrets management",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.tenantId", "properties.sku"],
+        "optional": ["tags", "properties.accessPolicies", "properties.enableRbacAuthorization", "properties.enableSoftDelete", "properties.softDeleteRetentionInDays", "properties.enablePurgeProtection", "properties.networkAcls", "properties.publicNetworkAccess"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "standard", "family": "A" },
+        "enableRbacAuthorization": true,
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90
+      }
+    },
+    {
+      "id": "managed-identity",
+      "name": "Managed Identity",
+      "resourceType": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "category": "Identity",
+      "iconPath": "azure:managed-identities",
+      "description": "User-assigned managed identity",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "openai",
+      "name": "Azure OpenAI",
+      "resourceType": "Microsoft.CognitiveServices/accounts",
+      "category": "AI",
+      "iconPath": "azure:openai",
+      "description": "Azure OpenAI Service",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.customSubDomainName", "properties.networkAcls", "properties.publicNetworkAccess", "properties.disableLocalAuth"]
+      },
+      "defaultProperties": {
+        "kind": "OpenAI",
+        "sku": { "name": "S0" },
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "id": "cognitive-services",
+      "name": "Cognitive Services",
+      "resourceType": "Microsoft.CognitiveServices/accounts",
+      "category": "AI",
+      "iconPath": "azure:cognitive-services",
+      "description": "AI services multi-service account",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.customSubDomainName", "properties.networkAcls", "properties.publicNetworkAccess"]
+      },
+      "defaultProperties": {
+        "kind": "CognitiveServices",
+        "sku": { "name": "S0" }
+      }
+    },
+    {
+      "id": "speech-service",
+      "name": "Speech Service",
+      "resourceType": "Microsoft.CognitiveServices/accounts",
+      "category": "AI",
+      "iconPath": "azure:speech-services",
+      "description": "Speech-to-text and text-to-speech",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.customSubDomainName"]
+      },
+      "defaultProperties": {
+        "kind": "SpeechServices",
+        "sku": { "name": "S0" }
+      }
+    },
+    {
+      "id": "computer-vision",
+      "name": "Computer Vision",
+      "resourceType": "Microsoft.CognitiveServices/accounts",
+      "category": "AI",
+      "iconPath": "azure:computer-vision",
+      "description": "Image analysis AI",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.customSubDomainName"]
+      },
+      "defaultProperties": {
+        "kind": "ComputerVision",
+        "sku": { "name": "S1" }
+      }
+    },
+    {
+      "id": "language-service",
+      "name": "Language Service",
+      "resourceType": "Microsoft.CognitiveServices/accounts",
+      "category": "AI",
+      "iconPath": "azure:language",
+      "description": "NLP and text analytics",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.customSubDomainName"]
+      },
+      "defaultProperties": {
+        "kind": "TextAnalytics",
+        "sku": { "name": "S" }
+      }
+    },
+    {
+      "id": "document-intelligence",
+      "name": "Document Intelligence",
+      "resourceType": "Microsoft.CognitiveServices/accounts",
+      "category": "AI",
+      "iconPath": "azure:form-recognizer",
+      "description": "Document processing AI",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "sku"],
+        "optional": ["tags", "identity", "properties.customSubDomainName"]
+      },
+      "defaultProperties": {
+        "kind": "FormRecognizer",
+        "sku": { "name": "S0" }
+      }
+    },
+    {
+      "id": "machine-learning",
+      "name": "Machine Learning Workspace",
+      "resourceType": "Microsoft.MachineLearningServices/workspaces",
+      "category": "AI",
+      "iconPath": "azure:machine-learning",
+      "description": "ML development workspace",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.storageAccount", "properties.keyVault", "properties.applicationInsights"],
+        "optional": ["tags", "identity", "sku", "properties.containerRegistry", "properties.publicNetworkAccess", "properties.encryption", "properties.hbiWorkspace"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Basic", "tier": "Basic" }
+      }
+    },
+    {
+      "id": "ai-search",
+      "name": "AI Search",
+      "resourceType": "Microsoft.Search/searchServices",
+      "category": "AI",
+      "iconPath": "azure:search-services",
+      "description": "AI-powered search service",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.replicaCount", "properties.partitionCount", "properties.hostingMode", "properties.publicNetworkAccess", "properties.semanticSearch"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "standard" },
+        "replicaCount": 1,
+        "partitionCount": 1
+      }
+    },
+    {
+      "id": "bot-service",
+      "name": "Bot Service",
+      "resourceType": "Microsoft.BotService/botServices",
+      "category": "AI",
+      "iconPath": "azure:bot-services",
+      "description": "Intelligent bot service",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "kind", "properties.displayName", "properties.endpoint", "properties.msaAppId"],
+        "optional": ["tags", "properties.description"]
+      },
+      "defaultProperties": {
+        "kind": "azurebot",
+        "sku": { "name": "F0" }
+      }
+    },
+    {
+      "id": "service-bus",
+      "name": "Service Bus",
+      "resourceType": "Microsoft.ServiceBus/namespaces",
+      "category": "Integration",
+      "iconPath": "azure:service-bus",
+      "description": "Enterprise messaging",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.zoneRedundant", "properties.disableLocalAuth", "properties.premiumMessagingPartitions", "properties.minimumTlsVersion"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard", "tier": "Standard" }
+      }
+    },
+    {
+      "id": "event-hub",
+      "name": "Event Hub",
+      "resourceType": "Microsoft.EventHub/namespaces",
+      "category": "Integration",
+      "iconPath": "azure:event-hubs",
+      "description": "Big data streaming",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.isAutoInflateEnabled", "properties.maximumThroughputUnits", "properties.zoneRedundant", "properties.kafkaEnabled", "properties.minimumTlsVersion"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard", "tier": "Standard", "capacity": 1 },
+        "isAutoInflateEnabled": true,
+        "maximumThroughputUnits": 20
+      }
+    },
+    {
+      "id": "event-grid-topic",
+      "name": "Event Grid Topic",
+      "resourceType": "Microsoft.EventGrid/topics",
+      "category": "Integration",
+      "iconPath": "azure:event-grid-topics",
+      "description": "Event routing",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "identity", "properties.inputSchema", "properties.publicNetworkAccess", "properties.inboundIpRules", "properties.disableLocalAuth"]
+      },
+      "defaultProperties": {
+        "inputSchema": "EventGridSchema"
+      }
+    },
+    {
+      "id": "event-grid-domain",
+      "name": "Event Grid Domain",
+      "resourceType": "Microsoft.EventGrid/domains",
+      "category": "Integration",
+      "iconPath": "azure:event-grid-domains",
+      "description": "Multi-tenant event management",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "identity", "properties.inputSchema", "properties.publicNetworkAccess", "properties.autoCreateTopicWithFirstSubscription"]
+      },
+      "defaultProperties": {
+        "inputSchema": "EventGridSchema"
+      }
+    },
+    {
+      "id": "logic-app",
+      "name": "Logic App",
+      "resourceType": "Microsoft.Logic/workflows",
+      "category": "Integration",
+      "iconPath": "azure:logic-apps",
+      "description": "Workflow automation",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.definition"],
+        "optional": ["tags", "identity", "properties.state", "properties.parameters", "properties.integrationAccount", "properties.accessControl"]
+      },
+      "defaultProperties": {
+        "state": "Enabled"
+      }
+    },
+    {
+      "id": "logic-app-standard",
+      "name": "Logic App (Standard)",
+      "resourceType": "Microsoft.Web/sites",
+      "category": "Integration",
+      "iconPath": "azure:logic-apps",
+      "description": "Workflow automation - Standard tier",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "properties.serverFarmId"],
+        "optional": ["tags", "identity", "properties.siteConfig", "properties.httpsOnly"]
+      },
+      "defaultProperties": {
+        "kind": "workflowapp,functionapp,linux",
+        "httpsOnly": true
+      }
+    },
+    {
+      "id": "api-management",
+      "name": "API Management",
+      "resourceType": "Microsoft.ApiManagement/service",
+      "category": "Integration",
+      "iconPath": "azure:api-management-services",
+      "description": "API gateway",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.publisherEmail", "properties.publisherName"],
+        "optional": ["tags", "identity", "zones", "properties.virtualNetworkType", "properties.virtualNetworkConfiguration", "properties.customProperties", "properties.certificates"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Developer", "capacity": 1 }
+      }
+    },
+    {
+      "id": "data-factory",
+      "name": "Data Factory",
+      "resourceType": "Microsoft.DataFactory/factories",
+      "category": "Analytics",
+      "iconPath": "azure:data-factories",
+      "description": "Data integration service",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "identity", "properties.repoConfiguration", "properties.globalParameters", "properties.publicNetworkAccess", "properties.encryption"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "synapse-workspace",
+      "name": "Synapse Workspace",
+      "resourceType": "Microsoft.Synapse/workspaces",
+      "category": "Analytics",
+      "iconPath": "azure:synapse-analytics",
+      "description": "Analytics service",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.defaultDataLakeStorage", "properties.sqlAdministratorLogin", "properties.sqlAdministratorLoginPassword"],
+        "optional": ["tags", "identity", "properties.managedVirtualNetwork", "properties.publicNetworkAccess", "properties.azureADOnlyAuthentication", "properties.managedResourceGroupName"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "databricks",
+      "name": "Databricks Workspace",
+      "resourceType": "Microsoft.Databricks/workspaces",
+      "category": "Analytics",
+      "iconPath": "azure:databricks",
+      "description": "Apache Spark analytics",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.managedResourceGroupId"],
+        "optional": ["tags", "properties.parameters", "properties.publicNetworkAccess", "properties.requiredNsgRules"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "premium" }
+      }
+    },
+    {
+      "id": "stream-analytics",
+      "name": "Stream Analytics",
+      "resourceType": "Microsoft.StreamAnalytics/streamingjobs",
+      "category": "Analytics",
+      "iconPath": "azure:stream-analytics-jobs",
+      "description": "Real-time analytics",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.sku"],
+        "optional": ["tags", "identity", "properties.compatibilityLevel", "properties.dataLocale", "properties.eventsLateArrivalMaxDelayInSeconds", "properties.eventsOutOfOrderMaxDelayInSeconds", "properties.eventsOutOfOrderPolicy", "properties.inputs", "properties.outputs", "properties.transformation"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard" }
+      }
+    },
+    {
+      "id": "hdinsight",
+      "name": "HDInsight Cluster",
+      "resourceType": "Microsoft.HDInsight/clusters",
+      "category": "Analytics",
+      "iconPath": "azure:hdinsight-clusters",
+      "description": "Managed Hadoop/Spark",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.clusterDefinition", "properties.computeProfile"],
+        "optional": ["tags", "identity", "properties.tier", "properties.storageProfile", "properties.securityProfile"]
+      },
+      "defaultProperties": {
+        "tier": "Standard"
+      }
+    },
+    {
+      "id": "application-insights",
+      "name": "Application Insights",
+      "resourceType": "Microsoft.Insights/components",
+      "category": "Monitor",
+      "iconPath": "azure:application-insights",
+      "description": "Application monitoring",
+      "bicepProperties": {
+        "required": ["name", "location", "kind", "properties.Application_Type"],
+        "optional": ["tags", "properties.WorkspaceResourceId", "properties.publicNetworkAccessForIngestion", "properties.publicNetworkAccessForQuery", "properties.DisableIpMasking", "properties.RetentionInDays"]
+      },
+      "defaultProperties": {
+        "kind": "web",
+        "Application_Type": "web"
+      }
+    },
+    {
+      "id": "log-analytics",
+      "name": "Log Analytics Workspace",
+      "resourceType": "Microsoft.OperationalInsights/workspaces",
+      "category": "Monitor",
+      "iconPath": "azure:log-analytics-workspaces",
+      "description": "Central log storage",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.sku", "properties.retentionInDays", "properties.publicNetworkAccessForIngestion", "properties.publicNetworkAccessForQuery", "properties.features"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "PerGB2018" },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "id": "action-group",
+      "name": "Action Group",
+      "resourceType": "Microsoft.Insights/actionGroups",
+      "category": "Monitor",
+      "iconPath": "azure:alerts",
+      "description": "Alert notification config",
+      "bicepProperties": {
+        "required": ["name", "properties.groupShortName", "properties.enabled"],
+        "optional": ["tags", "properties.emailReceivers", "properties.smsReceivers", "properties.webhookReceivers", "properties.azureFunctionReceivers", "properties.logicAppReceivers", "properties.armRoleReceivers"]
+      },
+      "defaultProperties": {
+        "location": "global",
+        "enabled": true
+      }
+    },
+    {
+      "id": "metric-alert",
+      "name": "Metric Alert",
+      "resourceType": "Microsoft.Insights/metricAlerts",
+      "category": "Monitor",
+      "iconPath": "azure:alerts",
+      "description": "Metric-based alerting",
+      "bicepProperties": {
+        "required": ["name", "properties.enabled", "properties.scopes", "properties.evaluationFrequency", "properties.windowSize", "properties.criteria"],
+        "optional": ["tags", "properties.severity", "properties.description", "properties.actions"]
+      },
+      "defaultProperties": {
+        "location": "global",
+        "enabled": true
+      }
+    },
+    {
+      "id": "automation-account",
+      "name": "Automation Account",
+      "resourceType": "Microsoft.Automation/automationAccounts",
+      "category": "Management",
+      "iconPath": "azure:automation-accounts",
+      "description": "Process automation",
+      "bicepProperties": {
+        "required": ["name", "location", "properties.sku"],
+        "optional": ["tags", "identity", "properties.publicNetworkAccess", "properties.disableLocalAuth", "properties.encryption"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Basic" }
+      }
+    },
+    {
+      "id": "recovery-vault",
+      "name": "Recovery Services Vault",
+      "resourceType": "Microsoft.RecoveryServices/vaults",
+      "category": "Management",
+      "iconPath": "azure:recovery-services-vaults",
+      "description": "Backup and disaster recovery",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.publicNetworkAccess", "properties.securitySettings"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "RS0", "tier": "Standard" }
+      }
+    },
+    {
+      "id": "iot-hub",
+      "name": "IoT Hub",
+      "resourceType": "Microsoft.Devices/IotHubs",
+      "category": "IoT",
+      "iconPath": "azure:iot-hub",
+      "description": "IoT device management",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.eventHubEndpoints", "properties.routing", "properties.cloudToDevice", "properties.messagingEndpoints", "properties.enableFileUploadNotifications"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "S1", "tier": "Standard", "capacity": 1 }
+      }
+    },
+    {
+      "id": "iot-central",
+      "name": "IoT Central",
+      "resourceType": "Microsoft.IoTCentral/iotApps",
+      "category": "IoT",
+      "iconPath": "azure:iot-central-applications",
+      "description": "IoT SaaS platform",
+      "bicepProperties": {
+        "required": ["name", "location", "sku", "properties.subdomain"],
+        "optional": ["tags", "identity", "properties.displayName", "properties.template", "properties.publicNetworkAccess"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "ST2" }
+      }
+    },
+    {
+      "id": "digital-twins",
+      "name": "Digital Twins",
+      "resourceType": "Microsoft.DigitalTwins/digitalTwinsInstances",
+      "category": "IoT",
+      "iconPath": "azure:digital-twins",
+      "description": "IoT modeling service",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "identity", "properties.publicNetworkAccess", "properties.privateEndpointConnections"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "signalr",
+      "name": "SignalR Service",
+      "resourceType": "Microsoft.SignalRService/signalR",
+      "category": "Web",
+      "iconPath": "azure:signalr",
+      "description": "Real-time messaging",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "kind", "properties.cors", "properties.features", "properties.publicNetworkAccess", "properties.networkACLs"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard_S1", "tier": "Standard", "capacity": 1 },
+        "kind": "SignalR"
+      }
+    },
+    {
+      "id": "web-pubsub",
+      "name": "Web PubSub",
+      "resourceType": "Microsoft.SignalRService/webPubSub",
+      "category": "Web",
+      "iconPath": "azure:web-pubsub-service",
+      "description": "WebSocket messaging",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.publicNetworkAccess", "properties.disableLocalAuth", "properties.tls"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "Standard_S1", "tier": "Standard", "capacity": 1 }
+      }
+    },
+    {
+      "id": "notification-hub",
+      "name": "Notification Hub",
+      "resourceType": "Microsoft.NotificationHubs/namespaces/notificationHubs",
+      "category": "Mobile",
+      "iconPath": "azure:notification-hubs",
+      "description": "Push notifications",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.apnsCredential", "properties.gcmCredential", "properties.wnsCredential", "properties.fcmV1Credential"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "devtest-lab",
+      "name": "DevTest Lab",
+      "resourceType": "Microsoft.DevTestLab/labs",
+      "category": "DevOps",
+      "iconPath": "azure:devtest-labs",
+      "description": "Dev/test environments",
+      "bicepProperties": {
+        "required": ["name", "location"],
+        "optional": ["tags", "properties.labStorageType", "properties.premiumDataDisks", "properties.environmentPermission", "properties.announcement", "properties.support"]
+      },
+      "defaultProperties": {}
+    },
+    {
+      "id": "app-configuration",
+      "name": "App Configuration",
+      "resourceType": "Microsoft.AppConfiguration/configurationStores",
+      "category": "Management",
+      "iconPath": "azure:app-configuration",
+      "description": "Application configuration management",
+      "bicepProperties": {
+        "required": ["name", "location", "sku"],
+        "optional": ["tags", "identity", "properties.disableLocalAuth", "properties.publicNetworkAccess", "properties.encryption", "properties.softDeleteRetentionInDays"]
+      },
+      "defaultProperties": {
+        "sku": { "name": "standard" }
+      }
+    }
+  ],
+  "categories": [
+    "Compute",
+    "Containers",
+    "Networking",
+    "Storage",
+    "Databases",
+    "AI",
+    "Analytics",
+    "Security",
+    "Identity",
+    "Integration",
+    "Web",
+    "Monitor",
+    "Management",
+    "IoT",
+    "DevOps",
+    "Mobile",
+    "Hybrid"
+  ],
+  "lastUpdated": "2025-01-07T00:00:00Z"
+}
