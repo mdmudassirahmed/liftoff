@@ -12,12 +12,16 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Fail if 5173 is taken instead of silently moving to a port the backend's
+    // CORS_ORIGINS doesn't allow. Use `npm run dev -- --port 5174` and add that
+    // origin to CORS_ORIGINS in backend/.env if you need another port.
+    strictPort: true,
     // Loopback only by default. Use `npm run dev -- --host` to expose on your LAN
     // (then add that origin to CORS_ORIGINS in backend/.env).
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
     },

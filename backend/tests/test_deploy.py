@@ -54,6 +54,17 @@ def test_rejects_path_traversal(client, fake_az, path):
     assert fake_az == []
 
 
+def test_missing_azure_cli_gives_install_guidance(client, monkeypatch):
+    """A machine without az should get an actionable message, not a WinError/ENOENT dump."""
+    def no_az(*args, **kwargs):
+        raise FileNotFoundError(2, "No such file or directory", "az")
+
+    monkeypatch.setattr(deploy.subprocess, "run", no_az)
+    status = client.get("/api/deploy/status").json()
+    assert status["authenticated"] is False
+    assert "Install it from" in status["error"] and "az login" in status["error"]
+
+
 def test_valid_what_if_passes_args_as_list(client, fake_az):
     sub = "00000000-0000-0000-0000-000000000000"
     r = client.post("/api/deploy/what-if", json=_body(resource_group="rg-demo_(1).x", subscription_id=sub))

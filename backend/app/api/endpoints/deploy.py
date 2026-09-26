@@ -202,6 +202,13 @@ def run_az_command_sync(args: List[str], cwd: Optional[str] = None) -> tuple[int
         )
 
         return result.returncode, result.stdout, result.stderr
+    except FileNotFoundError:
+        logger.error("Azure CLI (az) not found on PATH")
+        return 1, "", (
+            "Azure CLI not found. Install it from "
+            "https://learn.microsoft.com/cli/azure/install-azure-cli, then run 'az login' "
+            "and restart the backend."
+        )
     except Exception as e:
         logger.error(f"Error running az command: {e}", exc_info=True)
         return 1, "", str(e)

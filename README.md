@@ -119,8 +119,8 @@ What-If and deployment.
 git clone https://github.com/mdmudassirahmed/liftoff.git
 cd liftoff
 
-./scripts/dev.sh          # macOS / Linux
-.\scripts\dev.ps1         # Windows PowerShell
+./scripts/dev.sh                                             # macOS / Linux
+powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1   # Windows
 ```
 
 The script installs dependencies on the first run and starts both services. Open

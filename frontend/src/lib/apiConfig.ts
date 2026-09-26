@@ -1,6 +1,6 @@
 // Backend connection settings, read once from Vite env (frontend/.env.local).
 
-export const API_BASE: string = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+export const API_BASE: string = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 
 const API_TOKEN: string = import.meta.env.VITE_API_TOKEN || '';
 
