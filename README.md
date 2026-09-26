@@ -257,7 +257,7 @@ the backend.
 | **OpenAI** | `OPENAI_API_KEY=sk-...` and optionally `AI_MODEL=gpt-4.1` |
 | **Local model** (Ollama, LM Studio, vLLM, any OpenAI-compatible server) | `OPENAI_BASE_URL=http://localhost:11434/v1` and `AI_MODEL=llama3.1` (Ollama example) |
 | **Azure OpenAI** | `AZURE_OPENAI_ENDPOINT=https://<resource>.openai.azure.com/` and `AZURE_OPENAI_DEPLOYMENT=<deployment>`. Keyless through `az login`, or set `AZURE_OPENAI_API_KEY` |
-| **Azure AI Foundry agents** | `AZURE_AI_PROJECT_ENDPOINT=...` after creating the agents once with `agents/create_agents.py` (keyless through `az login`) |
+| **Azure AI Foundry agents** | `AZURE_AI_PROJECT_ENDPOINT=...`, then create the agents once with `python scripts/foundry_agents.py create` from `backend/` (keyless through `az login`) |
 
 `AI_PROVIDER=auto` (the default) uses the first option that is set; set it to `openai`,
 `azure-openai` or `foundry` to choose explicitly. Until a provider is configured, AI
@@ -323,7 +323,6 @@ Every setting has a safe default.
 |------|----------|
 | `backend/.env` ([example](backend/.env.example)) | `AI_PROVIDER`, `AI_MODEL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `AZURE_OPENAI_*`, `AZURE_AI_PROJECT_ENDPOINT`, `AWS_*`, `CORS_ORIGINS`, `ALLOWED_HOSTS`, `API_AUTH_TOKEN`, `GUARDRAILS_ENABLED`, `IAC_REFERENCE_EXISTING_NETWORKS` |
 | `frontend/.env.local` ([example](frontend/.env.example)) | `VITE_API_URL`, `VITE_API_TOKEN` |
-| `agents/.env` ([example](agents/.env.example)) | `AZURE_AI_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME` |
 
 All `.env` files are ignored by git.
 
@@ -359,7 +358,8 @@ is a contained piece of work.
 **Which models can I use?** Anything with an OpenAI-compatible chat API: OpenAI,
 Azure OpenAI, local models through Ollama or LM Studio, hosted gateways such as
 OpenRouter, or Azure AI Foundry agents. Pick one in `backend/.env`. The agents are
-plain system prompts (`backend/app/agents/prompts.py`), so you can also tune them.
+plain system prompts (`backend/app/agents/prompts.py`), so you can also tune them;
+on Foundry, re-run `python scripts/foundry_agents.py create` afterwards.
 
 **Can I trust the generated code blindly?** No. It is compiled, checked and previewed,
 which removes most of the usual failure modes, but review it like any other pull
@@ -381,9 +381,8 @@ request before it reaches production.
 ## Project layout
 
 ```
-backend/    FastAPI API, guardrail engine, Foundry client, Azure CLI deployment
+backend/    FastAPI API, agents and AI providers, cloud plugins (Azure, AWS), guardrails, deployment
 frontend/   React application: canvas, property editor, IaC preview, deploy flow
-agents/     Scripts that create, test and delete the Azure AI Foundry agents
 examples/   Diagrams you can import straight away
 docs/       Design notes
 scripts/    Development launchers

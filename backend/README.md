@@ -31,7 +31,7 @@ variables or `backend/.env`. See [`.env.example`](.env.example) for the full lis
 | `AI_MODEL` | `gpt-4.1` | Model name for OpenAI-compatible providers (and the Azure OpenAI deployment fallback) |
 | `OPENAI_API_KEY`, `OPENAI_BASE_URL` | *(empty)* | OpenAI, or any OpenAI-compatible server (Ollama: `http://localhost:11434/v1`) |
 | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_KEY` | *(empty)* | Azure OpenAI; keyless through `az login` unless the key is set |
-| `AZURE_AI_PROJECT_ENDPOINT` | *(empty)* | Azure AI Foundry project hosting the agents created by `agents/create_agents.py` |
+| `AZURE_AI_PROJECT_ENDPOINT` | *(empty)* | Azure AI Foundry project hosting the agents created by `scripts/foundry_agents.py create` |
 | `CORS_ORIGINS` | localhost:5173 / 4173 | Browser origins allowed to call the API |
 | `ALLOWED_HOSTS` | localhost, 127.0.0.1 | Host-header allow-list (DNS-rebinding protection) |
 | `API_AUTH_TOKEN` | *(empty)* | Require `Authorization: Bearer <token>` on `/api/*` |
@@ -87,13 +87,14 @@ ruff check .
 
 ```
 app/
-├── agents/foundry/   Foundry client (prompts, Bicep auto-fix loop) + registry
+├── agents/           prompts.py (the six agents), providers.py, foundry/ client + registry
 ├── api/endpoints/    agents, chat, iac, deploy, health
 ├── core/             settings, logging, request guard middleware
-├── data/guardrails/  guardrail catalog + service map
-├── mcp/              Microsoft Learn docs tool
+├── csp/              cloud plugins: azure/, aws/ (CloudFormation, cfn-lint, change sets)
+├── data/             guardrail catalog, AWS service catalog
+├── mcp/              Microsoft Learn MCP client
 ├── models/           Pydantic request/response models
 └── services/         guardrail matching, prompt constraints, compliance report
-scripts/              build_guardrail_catalog.py
+scripts/              build_guardrail_catalog.py, foundry_agents.py (optional Foundry setup)
 tests/                pytest suite
 ```

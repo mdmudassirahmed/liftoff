@@ -1,8 +1,0 @@
-# Azure AI Foundry Agents - Standalone Package
-# ============================================
-# This package creates agents in NEW Microsoft Foundry with MCP tool support.
-
-azure-ai-projects==2.0.0b2
-azure-identity>=1.19.0
-python-dotenv>=1.0.1
-openai>=1.58.0

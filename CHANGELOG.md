@@ -9,6 +9,7 @@
 - Architecture advisor grounded in the Microsoft Learn MCP server (real MCP Streamable HTTP client) for every AI provider, with source links in the chat
 - The active cloud follows the diagram: importing or generating an AWS diagram switches the palette and IaC format automatically
 - Example: `examples/aws-serverless-api.json`; deep links accept `&cloud=aws`
+- One source of truth for the six agents (`backend/app/agents/prompts.py`); the separate `agents/` folder is replaced by an optional `backend/scripts/foundry_agents.py` (create, list, chat, delete) for Azure AI Foundry users
 
 ## 1.1.0
 

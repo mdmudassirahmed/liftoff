@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 
-from app.agents.prompts import SYSTEM_PROMPTS
+from app.agents.prompts import AGENTS, SYSTEM_PROMPTS
 from app.agents.providers import (
     FOUNDRY,
     NONE,
@@ -312,15 +312,8 @@ async def _validate_bicep_files(
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-# Agent names in Azure AI Foundry (as created in the portal)
-AGENT_NAMES = {
-    "orchestrator": "orchestrator-agent",
-    "iac_generator": "iac-generator-agent",
-    "azure_docs": "azure-docs-agent",
-    "security_advisor": "security-advisor-agent",
-    "validation": "validation-agent",
-    "aws_iac_generator": "aws-iac-generator-agent",
-}
+# Agent names in Azure AI Foundry (created by scripts/foundry_agents.py)
+AGENT_NAMES = {agent_type: spec["name"] for agent_type, spec in AGENTS.items()}
 
 
 class AgentsUnavailableError(RuntimeError):

@@ -37,7 +37,7 @@
 ### B.4 Backend (no deterministic schema authority)
 - **Diagram generation is LLM-only:** `POST /diagram/generate` (`agents.py:408-477`) prepends a static `DIAGRAM_JSON_SCHEMA` prompt and calls `iac-generator-agent` (there is no dedicated diagram agent). Output is `json.loads`'d after stripping fences.
 - **IaC generation is LLM-only prompt engineering** (`foundry_client.py:244-251,393-425` hand-written "BICEP SYNTAX RULES"). "Validation" is keyword sniffing (`iac.py`: `has_errors = any(word in content for word in ['error','invalid','fail'])`). `IaCResponse.mcp_enhanced=True` is hardcoded and misleading - no schema validation occurs.
-- **MCP is barely wired:** `MCP_BICEP_URL` (`config.py:19`) points at a non-functional `.../tools/azure-bicep-schema` path and is **never called**. `integration_settings.py` (`get_mcp_servers()`) is dead and references undefined `Settings` fields. The only real MCP is the Foundry-hosted `azure-docs-agent` with Microsoft Learn MCP (`agents/create_agents.py`). No bicep-schema MCP is attached to any agent.
+- **MCP is barely wired:** `MCP_BICEP_URL` (`config.py:19`) points at a non-functional `.../tools/azure-bicep-schema` path and is **never called**. `integration_settings.py` (`get_mcp_servers()`) is dead and references undefined `Settings` fields. The only real MCP is the Foundry-hosted `azure-docs-agent` with Microsoft Learn MCP (`backend/scripts/foundry_agents.py`). No bicep-schema MCP is attached to any agent.
 - **First real Azure schema enforcement = deploy time:** `az deployment group what-if/create` in `deploy.py` (shells `az` with `shell=True`, RG scope only).
 
 ---
@@ -125,7 +125,7 @@ Prompt path:      NL prompt --> orchestrator/iac agent picks SERVICE TYPES only 
 | Docs Q&A / "how do I..." | - | yes: `azure-docs-agent` (Microsoft Learn MCP) |
 | Final IaC synthesis | provide validated graph + `dependsOn` skeleton | yes: `iac-generator-agent` fills bodies; then `az what-if` is the final gate |
 
-**Concrete change to the prompt path:** `POST /diagram/generate` should return **only service *selection* + relationships** (which `Microsoft.*` types and how they connect), then the frontend **snaps each returned node to the schema catalog** (correct apiVersion, iconRef, required slots) rather than trusting the LLM's `resourceType`/property strings. This keeps the LLM where it is strong (intent -> components) and removes it from where it is dangerous (field-level correctness). Also attach a real bicep-schema tool to `iac-generator-agent` via `build_tools()` (`agents/create_agents.py:573`), replacing the hand-maintained "BICEP SYNTAX RULES" prompt with schema grounding.
+**Concrete change to the prompt path:** `POST /diagram/generate` should return **only service *selection* + relationships** (which `Microsoft.*` types and how they connect), then the frontend **snaps each returned node to the schema catalog** (correct apiVersion, iconRef, required slots) rather than trusting the LLM's `resourceType`/property strings. This keeps the LLM where it is strong (intent -> components) and removes it from where it is dangerous (field-level correctness). Also attach a real bicep-schema tool to `iac-generator-agent` via `build_tools()` (`backend/scripts/foundry_agents.py`), replacing the hand-maintained "BICEP SYNTAX RULES" prompt with schema grounding.
 
 ---
 
@@ -159,7 +159,7 @@ Prompt path:      NL prompt --> orchestrator/iac agent picks SERVICE TYPES only 
 - **Effort: L.**
 
 ### Phase 5 - Agent realignment + preflight hardening (M)
-- `POST /diagram/generate` returns selection-only; frontend snaps to catalog. Attach bicep-schema tool to `iac-generator-agent` (`create_agents.py:build_tools`). Feed validated graph + `dependsOn` skeleton into IaC generation; keep `az what-if` as final gate. Harden `deploy.py` `shell=True` arg interpolation.
+- `POST /diagram/generate` returns selection-only; frontend snaps to catalog. Attach bicep-schema tool to `iac-generator-agent` (`foundry_agents.py:build_tools`). Feed validated graph + `dependsOn` skeleton into IaC generation; keep `az what-if` as final gate. Harden `deploy.py` `shell=True` arg interpolation.
 - **Effort: M.**
 
 Order rationale: Phase 1 unblocks everything; Phases 2/3 each deliver a visible requirement independently and low-risk; Phase 4 is the hardest and depends on 1-3; Phase 5 is polish + safety.
@@ -188,7 +188,7 @@ Order rationale: Phase 1 unblocks everything; Phases 2/3 each deliver a visible 
 - **Dependency-catalog imperfection:** `resourceId` properties are plain strings; naming/`x-ms-arm-id-details` signals are inconsistent. Automated reference detection needs a curated override catalog (the high-value ~15 references) - ongoing maintenance, but far smaller than today's full hardcoded `serviceDependencies.ts`.
 - **Agent contract change risk:** switching `POST /diagram/generate` to selection-only changes the LLM contract and the frontend snap logic; regression risk on prompt path. Phase it behind a flag; keep the old importer until snap-to-catalog is proven.
 - **Child-resource UX unknown:** MCP won't enumerate children; the index will, but modeling storage-account-plus-containers as separate nodes vs nested config is a UX decision to validate with users.
-- **Model-switch operational trap (already documented):** editing `backend/.env` `AZURE_OPENAI_MODEL` does nothing; models are baked at agent creation (`create_agents.py:639` `PromptAgentDefinition(model=MODEL_DEPLOYMENT)`). Any agent change requires re-running `agents/create_agents.py`. Document this in the runbook so Phase 5 changes are deployed correctly.
+- **Model-switch operational trap (already documented):** editing `backend/.env` `AZURE_OPENAI_MODEL` does nothing; models are baked at agent creation (`foundry_agents.py` `PromptAgentDefinition(model=AI_MODEL)`). Any agent change requires re-running `python scripts/foundry_agents.py create`. Document this in the runbook so Phase 5 changes are deployed correctly.
 
 ---
 

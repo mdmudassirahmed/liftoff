@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     AZURE_OPENAI_DEPLOYMENT: str = ""
     AZURE_OPENAI_API_VERSION: str = "2024-10-21"
 
-    # Azure AI Foundry project that hosts the agents (created by agents/create_agents.py).
+    # Azure AI Foundry project that hosts the agents (created by scripts/foundry_agents.py).
     # Authentication is keyless: DefaultAzureCredential (az login, managed identity, ...).
     AZURE_AI_PROJECT_ENDPOINT: str = ""
 
